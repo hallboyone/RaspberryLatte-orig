@@ -27,7 +27,7 @@ namespace RaspLatte{
       }
     }
 
-    virtual bool read() const{
+    virtual bool read() {
       int sensor_val = gpioRead(p_);
       if (sensor_val==PI_BAD_GPIO){
 	throw "Bad GPIO pin!";

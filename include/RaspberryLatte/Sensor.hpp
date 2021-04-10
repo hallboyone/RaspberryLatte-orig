@@ -4,7 +4,7 @@
 namespace RaspLatte{
   template <typename RETURN_TYPE>
   class Sensor{
-    virtual RETURN_TYPE read() const = 0;
+    virtual RETURN_TYPE read() = 0;
   };
 }
 #endif

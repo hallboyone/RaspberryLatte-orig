@@ -11,6 +11,9 @@
 #define MAX31855_ERR_GND_SHORT 2
 #define MAX31855_ERR_VCC_SHORT 4
 #define MAX31855_TEMP_UNAVALIBLE -1000
+
+//#define DEBUG_MAX31855
+
 namespace RaspLatte{
   class MAX31855 : public Sensor<double> {
     /**
@@ -35,9 +38,6 @@ namespace RaspLatte{
 
     double readChipTemp(){
       updateData();
-      if (err_){
-	return MAX31855_TEMP_UNAVALIBLE;
-      }
       return chip_temp_;
     }
     
@@ -48,7 +48,23 @@ namespace RaspLatte{
     uint8_t readError(){
       return err_;
     }
-    
+
+    void printError(){
+      updateData();
+      switch(err_){
+      case MAX31855_ERR_OPEN_CIRCUIT:
+	std::cerr<<"MAX31855 Error - Open thermocouple circuit\n";
+	break;
+      case MAX31855_ERR_GND_SHORT:
+	std::cerr<<"MAX31855 Error - Short to ground in thermocouple circuit\n";
+	break;
+      case MAX31855_ERR_VCC_SHORT:
+	std::cerr<<"MAX31855 Error - Short to Vcc in thermocouple circuit\n";
+	break;
+      default:
+	std::cerr<<"MAX31855 Unknown Error\n";
+      }
+    }
   private:
     int handle_;
 
@@ -73,12 +89,21 @@ namespace RaspLatte{
       */
 
       char c_buf[4] = {0,0,0,0};
-      
       if (spiRead(handle_, c_buf, 4) < 0){
 	throw "Error: Could not read data from MAX31855 over SPI";
       }
 
-      int32_t buf = (c_buf[3]<<24) | (c_buf[2] << 16) | (c_buf[1] << 8) | c_buf[0];
+      int32_t buf = (c_buf[0]<<24) | (c_buf[1] << 16) | (c_buf[2] << 8) | c_buf[3];
+
+      #ifdef DEBUG_MAX31855
+      // Print raw data
+      int32_t buf2 = buf;
+      for (int i=0; i<32; i++){
+	std::cout<<(buf2 & 1);
+	buf2 = buf2>>1;
+      }
+      std::cout<<std::endl;
+      #endif
       
       // Errors
       err_ = (buf & 0x7);

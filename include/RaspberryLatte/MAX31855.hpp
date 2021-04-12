@@ -22,6 +22,10 @@ namespace RaspLatte{
      */
   public:
     MAX31855(int spi_select_pin){
+      if (gpioInitialise() < 0){
+	throw "Could not start GPIO!";
+      }
+      
       handle_ = spiOpen(spi_select_pin, 1000000, 0);
       if (handle_ < 0){
 	throw "Error: Could not open SPI to MAX31855.";

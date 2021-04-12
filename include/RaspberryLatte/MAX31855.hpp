@@ -62,7 +62,7 @@ namespace RaspLatte{
 	std::cerr<<"MAX31855 Error - Short to Vcc in thermocouple circuit\n";
 	break;
       default:
-	std::cerr<<"MAX31855 Unknown Error\n";
+	std::cerr<<"MAX31855 Error - No data received\n";
       }
     }
   private:
@@ -105,8 +105,8 @@ namespace RaspLatte{
       std::cout<<std::endl;
       #endif
       
-      // Errors
-      err_ = (buf & 0x7);
+      // Errors. Normal error codes or 0 data
+      err_ = (buf & 0x7) | ((buf==0)<<4);
       if (err_) return; // Nothing else to do. Error is set
 
       buf >>= 4; // Dump buttom 4 bits (error bits and reserved bit)

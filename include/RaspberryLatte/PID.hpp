@@ -194,6 +194,7 @@ namespace RaspLatte{
     void setSlopePeriodSec(double period){
       slope_.setPeriod(period);
     }
+    double setPoint(){ return set_point_; }
     void setSetpoint(double set_point){
       set_point_ = set_point;
       int_sum_.resetArea();

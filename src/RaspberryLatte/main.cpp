@@ -1,6 +1,7 @@
 #include "../../include/RaspberryLatte/BinarySensor.hpp"
 #include "../../include/RaspberryLatte/MAX31855.hpp"
 #include "../../include/RaspberryLatte/PID.hpp"
+#include "../../include/RaspberryLatte/Boiler.hpp"
 #include <iostream>
 
 
@@ -11,6 +12,9 @@ int main(void){
   RaspLatte::BinarySensor sensor1(gpio_num, pull_down, invert);
   RaspLatte::MAX31855 tempSensor(0);
 
+  RaspLatte::Boiler boiler1(&tempSensor, 4, 95, 140);
+  boiler1.activateBrew();
+  
   tempSensor.printError();
   
   double temp = tempSensor.read();
@@ -21,15 +25,17 @@ int main(void){
     std::cout<<"Thermo_temp = "<<tempSensor.read()<<std::endl;;
   }
   
-  std::cout<<"Sensor 1: "<<sensor1.read()<<std::endl;
 
+  /**
   RaspLatte::PID::PIDGains K = {.p = 15, .i = 0.001, .d = 40};
   RaspLatte::PID ctrl(&tempSensor, K);
   ctrl.setInputLimits(0, 255);
   ctrl.setIntegralSumLimits(-50, 50);
   ctrl.setSlopePeriodSec(1);
+  */
   for(int i = 0; i<100000; i++){
-    ctrl.update();
+    boiler1.update();
+    //ctrl.update();
   }
     
   return 1;

@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <chrono>
+#include <iostream>
 
 namespace RaspLatte{
   /**
@@ -227,8 +228,9 @@ namespace RaspLatte{
 
       int_sum_.addPoint(current_time, err);
       slope_.addPoint(current_time, err);
-     
+
       u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope();
+
       input_clamper_.clamp(u_);
 
       return u_;

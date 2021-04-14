@@ -10,32 +10,22 @@ int main(void){
   bool pull_down = false;
   bool invert = false;
   RaspLatte::BinarySensor sensor1(gpio_num, pull_down, invert);
-  RaspLatte::MAX31855 tempSensor(0);
 
-  RaspLatte::Boiler boiler1(&tempSensor, 4, 95, 140);
+  RaspLatte::MAX31855 boiler_temp_sensor(0);
+  
+  RaspLatte::Boiler boiler1(&boiler_temp_sensor, 4, 95, 140);
   boiler1.activateBrew();
   
-  tempSensor.printError();
-  
-  double temp = tempSensor.read();
+  double temp = boiler_temp_sensor.read();
   if(temp == MAX31855_TEMP_UNAVALIBLE){
-    tempSensor.printError();
+    boiler_temp_sensor.printError();
   }
   else{
-    std::cout<<"Thermo_temp = "<<tempSensor.read()<<std::endl;;
+    std::cout<<"Thermo_temp = "<<boiler_temp_sensor.read()<<std::endl;;
   }
-  
 
-  /**
-  RaspLatte::PID::PIDGains K = {.p = 15, .i = 0.001, .d = 40};
-  RaspLatte::PID ctrl(&tempSensor, K);
-  ctrl.setInputLimits(0, 255);
-  ctrl.setIntegralSumLimits(-50, 50);
-  ctrl.setSlopePeriodSec(1);
-  */
-  for(int i = 0; i<100000; i++){
+  while(1){
     boiler1.update();
-    //ctrl.update();
   }
     
   return 1;

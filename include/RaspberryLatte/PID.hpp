@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <chrono>
-#include <iostream>
 
 namespace RaspLatte{
   /**
@@ -158,7 +157,7 @@ namespace RaspLatte{
 	  num += sqrt_dem * (vals_[i] - avg_err);
 	  dem +=  sqrt_dem * sqrt_dem;
 	}
-	std::cout<<times_.size()<<std::endl;
+	
 	slope_ = num/dem;
       }
     };

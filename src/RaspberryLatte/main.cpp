@@ -23,11 +23,13 @@ int main(void){
   
   std::cout<<"Sensor 1: "<<sensor1.read()<<std::endl;
 
-  RaspLatte::PID::PIDGains K = {.p = 1, .i = 0.001, .d = 0};
+  RaspLatte::PID::PIDGains K = {.p = 15, .i = 0.001, .d = 40};
   RaspLatte::PID ctrl(&tempSensor, K);
-  for(int i = 0; i<100; i++){
+  ctrl.setInputLimits(0, 255);
+  ctrl.setIntegralSumLimits(-50, 50);
+  ctrl.setSlopePeriodSec(1);
+  for(int i = 0; i<100000; i++){
     ctrl.update();
-    std::cout<<ctrl.u()<<std::endl;
   }
     
   return 1;

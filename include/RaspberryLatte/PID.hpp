@@ -5,11 +5,165 @@
 
 #include <vector>
 #include <chrono>
-#include <ctime>
 #include <iostream>
 
 namespace RaspLatte{
+  /**
+   * PID - Implements a PID controller. The sensor data comes from a Sensor<double> object and is used to set
+   * an internal varable u_ (retreived with u()). The gains are provided using an internally defined struct
+   * called PIDGains. The following table gives the units of each (E is the error units, U the input, and s is seconds)
+   * along with any related settings
+   *                                     GAIN | UNITS |    Other Terms
+   *                                     =====|=======|==================
+   *                                      Kp  |  U/E  |       None
+   *                                      Ki  | U/(Es)|   Windup limits
+   *                                      Kd  |  Us/E | Slope time range
+   *
+   * In addition to the gains and their related fields, there is a field for the setpoint (default 0) and input range
+   */
+
+  class Clamper{
+  public:
+    Clamper(){}
+    Clamper(double min, double max): min_(min), max_(max){}    
+    void clamp(double & num){
+      if(num < min_) num = min_;
+      else if(num > max_) num = max_;
+    }
+    
+  private:
+    double min_ = -1000000;
+    double max_ = 1000000;
+  };
+  
   class PID{
+  private:
+    typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>> TimePoint;
+    typedef std::chrono::duration<double> Duration;
+    
+    class DIntegral{
+      /** A discrete integral class to handle the error sum in a PID controller*/
+    public:
+      DIntegral(){
+	prev_time_ = std::chrono::steady_clock::now();
+	prev_val_ = 0;
+      }
+      
+      DIntegral(TimePoint t, double v): prev_time_(t), prev_val_(v){}
+      
+      /** Add a point to the integral. Assume a linear change from the previous v to current*/
+      void addPoint(TimePoint t, double v){
+	Duration delta_t = t - prev_time_;
+	double avg_v = (v+prev_val_)/2.0;
+
+	area_ += (delta_t.count() * avg_v);
+
+	if(clamping_) clamp_.clamp(area_);
+	
+	prev_val_ = v;
+	prev_time_ = t;
+      }
+
+      void applyClamp(double min, double max){
+	clamping_ = true;
+	clamp_ = Clamper(min, max);
+	clamp_.clamp(area_);
+      }
+
+      double area(){
+	return area_;
+      }
+      void resetArea(){
+	area_ = 0;
+      }
+    private:
+      TimePoint prev_time_;
+      double prev_val_;
+      Clamper clamp_;
+      bool clamping_ = false;
+      double area_ = 0;
+    };
+
+    /**
+     * Fits a slope to the data points taken within the last period_ seconds.
+     */
+    class DDerivative{
+    public:
+      DDerivative(){
+	period_ = Duration(0.001);
+      }
+      DDerivative(TimePoint t, double v): times_(1,t), vals_(1,v){
+	period_ = Duration(0.001);
+      }
+      
+      double addPoint(TimePoint t, double v){
+	vals_.insert(vals_.begin(), v);
+	times_.insert(times_.begin(), t);
+	
+	// Dump points older than the period
+	cleanPoints();
+	updateSlope();
+	return slope_;
+      }
+
+      void setPeriod(double p){
+	if (p<0) period_ = Duration(0);
+	else period_ = Duration(p);
+	updateSlope();
+      }
+
+      void reset(){
+	vals_ = std::vector<double>();
+        times_ = std::vector<TimePoint>();
+	slope_ = 0;
+      }
+      
+      double slope(){ return slope_; }
+    private:
+      std::vector<TimePoint> times_;
+      std::vector<double> vals_;
+      Duration period_;
+      double slope_;
+      
+      void cleanPoints(){
+	while (times_.front() - times_.back() > period_){
+	  times_.pop_back();
+	  vals_.pop_back();
+	}
+      }
+
+      void updateSlope(){
+	// Can't get slope off one point.
+	if (vals_.size() <= 1){
+	  slope_ = 0;
+	  return;
+	}
+
+	// Find the average error and time
+	double avg_err = 0;
+	Duration avg_t(0);
+	for(unsigned int i = 0; i<vals_.size(); i++){
+	  avg_err += vals_[i];
+	  avg_t += times_[i].time_since_epoch();
+	}
+      
+	avg_err /= vals_.size();
+	avg_t /= vals_.size();
+	
+	//Find and return the slope
+	double num = 0;
+	double dem = 0;
+	for(unsigned int i = 0; i<vals_.size(); i++){
+	  double sqrt_dem = (times_[i].time_since_epoch() - avg_t).count();
+	  num += sqrt_dem * (vals_[i] - avg_err);
+	  dem +=  sqrt_dem * sqrt_dem;
+	}
+	std::cout<<times_.size()<<std::endl;
+	slope_ = num/dem;
+      }
+    };
+
+    
   public:
     typedef struct PIDGains_{
       double p;
@@ -17,84 +171,86 @@ namespace RaspLatte{
       double d;
     } PIDGains;
 
-    PID(Sensor<double> * sensor_ptr, PIDGains gains, double set_point = 0): sensor_(sensor_ptr), K(gains), set_point_(set_point){
-      slope_period_ = 1000; //microseconds
-      start_time_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-      std::cout<<start_time_<<std::endl;
-      previous_times_.push_back(start_time_);
-      previous_errs_.push_back(sensor_->read()-set_point_);
-    }
 
-    void update(){
-      double err = sensor_->read()-set_point_;
-      unsigned long current_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
-      //Get the integral term
-      if (!previous_times_.empty()){
-	integral_sum_ += err * (current_time - previous_times_[0])/1000000;
-      }
-
-      //Remove all old records
-      while (!previous_times_.empty() && current_time-previous_times_.back() > slope_period_){
-	previous_times_.pop_back();
-	previous_errs_.pop_back();
-      }
+    // ========================= Constructors =========================
+    PID(Sensor<double> * sensor_ptr, PIDGains gains, double set_point = 0): sensor_(sensor_ptr), K_(gains), set_point_(set_point){
+      min_t_between_updates_ = Duration(0.001);
       
-      //Save the new value and time
-      previous_times_.insert(previous_times_.begin(), current_time);
-      previous_errs_.insert(previous_errs_.begin(), err);
-
-      double slope = getSlope();
-
-      u_ = err * K.p + integral_sum_ * K.i + slope * K.d;
-      //std::cout<<"Time :"<<current_time<<"\nError: "<<err<<"\nIntegral Sum: "<<integral_sum_<<"\nSlope: "<<slope<<"\nSlope Count: "<<previous_times_.size()<<std::endl;
+      last_update_time_ = std::chrono::steady_clock::now();
+      
+      // Init the slope and integral terms
+      double err = sensor_->read()-set_point_;
+      slope_ = DDerivative(last_update_time_, err);
+      int_sum_ = DIntegral(last_update_time_, err);
     }
 
-    double u(){ return u_; }
-    
-    void updateSetpoint(double set_point){
+    // ============================ Set up ===========================
+    void setIntegralSumLimits(double min, double max){
+      int_sum_.applyClamp(min, max);
+    }
+    void setInputLimits(double min, double max){
+      if (min > max) input_clamper_ = Clamper(0,0);
+      else input_clamper_ = Clamper(min, max); 
+    }
+    void setSlopePeriodSec(double period){
+      slope_.setPeriod(period);
+    }
+    void setSetpoint(double set_point){
       set_point_ = set_point;
-      previous_errs_ = std::vector<double>();
-      integral_sum_ = 0;
-       previous_times_.push_back(start_time_);
-       previous_errs_.push_back(sensor_->read()-set_point_);
+      int_sum_.resetArea();
+      slope_.reset();
+    }
+    void setGains(PIDGains gains){
+      K_ = gains;
+    }
+    void setP(double Kp){
+      K_.p = Kp;
+    }
+    void setI(double Ki){
+      K_.i = Ki;
+    }
+    void setD(double Kd){
+      K_.d = Kd;
+    }
+    void setMinUpdateTimeSec(double t){
+      min_t_between_updates_ = Duration(t);
     }
     
-  private: 
+    // ======================== Operation ============================
+    double update(){
+      TimePoint current_time = std::chrono::steady_clock::now();
+      if (current_time - last_update_time_ < min_t_between_updates_) return u_;
+
+      last_update_time_ = current_time;
+      double err = sensor_->read()-set_point_;
+      
+
+      int_sum_.addPoint(current_time, err);
+      slope_.addPoint(current_time, err);
+     
+      u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope();
+      input_clamper_.clamp(u_);
+
+      return u_;
+    }
+
+    double u(){
+      return u_;
+    }
+    
+  private:  
     Sensor<double> * sensor_;
-    PIDGains K;
+    PIDGains K_;
     double set_point_;
 
-    std::vector<double> previous_errs_;
-    std::vector<unsigned long> previous_times_;
-    unsigned long start_time_; // micro sec
-    unsigned long slope_period_; // microsec
-    double integral_sum_ = 0;
+    Duration min_t_between_updates_;
+    TimePoint last_update_time_;
 
+    DDerivative slope_;
+    DIntegral int_sum_;
+    
     double u_ = 0;
-    double getSlope(){
-      // Can't get slope off one point.
-      if (previous_errs_.size() <= 1) return 0;
-
-      double avg_err = 0;
-      double avg_t = 0;
-
-      for(unsigned int i = 0; i<previous_errs_.size(); i++){
-	avg_err += previous_errs_[i];
-	avg_t += previous_times_[i];
-      }
-      
-      avg_err /= previous_errs_.size();
-      avg_t /= previous_errs_.size();
-
-      double num = 0;
-      double dem = 0;
-      for(unsigned int i = 0; i<previous_errs_.size(); i++){
-	num += (previous_times_[i] - avg_t) * (previous_errs_[i] - avg_err);
-	dem += (previous_times_[i] - avg_t) * (previous_times_[i] - avg_t);
-      }
-    return num/(dem*100000);
-    }
+    Clamper input_clamper_;
   };
 }
 #endif

@@ -21,7 +21,7 @@ namespace RaspLatte{
      * to-digital breakout board from Adafruit.
      */
   public:
-    MAX31855(int spi_select_pin){
+    MAX31855(PinIndex spi_select_pin){
       handle_ = spiOpen(spi_select_pin, 1000000, 0);
       if (handle_ < 0){
 	throw "Error: Could not open SPI to MAX31855.";

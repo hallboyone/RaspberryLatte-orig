@@ -2,10 +2,12 @@
 #define PID_CLASS
 
 #include "Sensor.hpp"
+#include "Clamp.hpp"
+#include "types.h"
 
 #include <vector>
-#include <chrono>
 #include <iostream>
+#include <chrono>
 
 namespace RaspLatte{
   /**
@@ -21,26 +23,8 @@ namespace RaspLatte{
    *
    * In addition to the gains and their related fields, there is a field for the setpoint (default 0) and input range
    */
-
-  class Clamper{
-  public:
-    Clamper(){}
-    Clamper(double min, double max): min_(min), max_(max){}    
-    void clamp(double & num){
-      if(num < min_) num = min_;
-      else if(num > max_) num = max_;
-    }
-    
-  private:
-    double min_ = -1000000;
-    double max_ = 1000000;
-  };
-  
   class PID{
   private:
-    typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double>> TimePoint;
-    typedef std::chrono::duration<double> Duration;
-    
     class DIntegral{
       /** A discrete integral class to handle the error sum in a PID controller*/
     public:
@@ -66,7 +50,8 @@ namespace RaspLatte{
 
       void applyClamp(double min, double max){
 	clamping_ = true;
-	clamp_ = Clamper(min, max);
+	clamp_.setMin(min);
+	clamp_.setMax(max);
 	clamp_.clamp(area_);
       }
 
@@ -79,7 +64,7 @@ namespace RaspLatte{
     private:
       TimePoint prev_time_;
       double prev_val_;
-      Clamper clamp_;
+      Clamp<double> clamp_;
       bool clamping_ = false;
       double area_ = 0;
     };
@@ -189,8 +174,8 @@ namespace RaspLatte{
       int_sum_.applyClamp(min, max);
     }
     void setInputLimits(double min, double max){
-      if (min > max) input_clamper_ = Clamper(0,0);
-      else input_clamper_ = Clamper(min, max); 
+      input_clamper_.setMin(min);
+      input_clamper_.setMax(max);
     }
     void setSlopePeriodSec(double period){
       slope_.setPeriod(period);
@@ -231,9 +216,7 @@ namespace RaspLatte{
 
       u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope();
 
-      input_clamper_.clamp(u_);
-
-      return u_;
+      return input_clamper_.clamp(u_);
     }
 
     double u(){
@@ -252,7 +235,7 @@ namespace RaspLatte{
     DIntegral int_sum_;
     
     double u_ = 0;
-    Clamper input_clamper_;
+    Clamp<double> input_clamper_;
   };
 }
 #endif

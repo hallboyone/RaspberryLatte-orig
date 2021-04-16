@@ -2,6 +2,7 @@
 #define BOILER
 
 #include "PID.hpp"
+#include "Clamp.hpp"
 #include "types.h"
 #include <iostream>
 #include <pigpio.h>
@@ -12,23 +13,26 @@ namespace RaspLatte{
     Sensor<double> * temp_sensor_;
     PinIndex pwm_pin_;
     
-    double set_point_brew_;
-    double set_point_steam_;
+    TempPair setpoints_;
     const PID::PIDGains K_brew_ = {.p = 15, .i = 0.1, .d = 50};
     const PID::PIDGains K_steam_ = {.p = 15, .i = 0.1, .d = 50};
     
     PID ctrl_;
 
-    Clamper set_point_clamp_;
+    Clamp<double> setpoint_clamp_;
 
     bool active_;
     unsigned int current_pwm_setting_ = 128;
     
   public:
-    Boiler(Sensor<double> * temp_sensor, PinIndex pwm_pin, double set_point_brew, double set_point_steam):
+    Boiler(Sensor<double> * temp_sensor, PinIndex pwm_pin, TempPair setpoints):      
       temp_sensor_(temp_sensor), pwm_pin_(pwm_pin),
-      set_point_brew_(set_point_brew), set_point_steam_(set_point_steam), K_brew_{15, 0.1, 50}, K_steam_{15, 0.1, 50},
-      ctrl_(temp_sensor_, K_brew_, set_point_brew_), set_point_clamp_(-10000,160){
+      setpoints_(setpoints), K_brew_{15, 0.1, 50}, K_steam_{15, 0.1, 50},
+      ctrl_(temp_sensor_, K_brew_, setpoints_.brew), setpoint_clamp_(0,160){
+	if (gpioInitialise() < 0){
+	  throw "Could not start GPIO!";
+	}
+
 	active_ = false;
 	
 	ctrl_.setMinUpdateTimeSec(0.20); //Don't update the PID faster than 5Hz
@@ -36,25 +40,25 @@ namespace RaspLatte{
       }
 
     bool brewActive(){
-      return ctrl_.setPoint()==set_point_brew_;
+      return ctrl_.setPoint()==setpoints_.brew;
     }
     bool steamActive(){
-      return ctrl_.setPoint()==set_point_steam_;
+      return ctrl_.setPoint()==setpoints_.steam;
     }
     
-    void setBrewSetpoint(double set_point){
-      set_point_clamp_.clamp(set_point);
-      set_point_brew_ = set_point;
+    void setBrewSetpoint(double setpoint){
+      setpoint_clamp_.clamp(setpoint);
+      setpoints_.brew = setpoint;
       if (brewActive()){
-	ctrl_.setSetpoint(set_point);
+	ctrl_.setSetpoint(setpoint);
 	update();
       }
     }
-    void setSteamSetpoint(double set_point){
-      set_point_clamp_.clamp(set_point);
-      set_point_steam_ = set_point;
+    void setSteamSetpoint(double setpoint){
+      setpoint_clamp_.clamp(setpoint);
+      setpoints_.steam = setpoint;
       if (steamActive()){
-	ctrl_.setSetpoint(set_point);
+	ctrl_.setSetpoint(setpoint);
 	update();
       }
     }
@@ -77,14 +81,14 @@ namespace RaspLatte{
     void activateBrew(){
       std::cout<<"Activating brew settings."<<std::endl;
       active_ = true;
-      ctrl_.setSetpoint(set_point_brew_);
+      ctrl_.setSetpoint(setpoints_.brew);
       ctrl_.setGains(K_brew_);
       update();
     }
     void activateSteam(){
       std::cout<<"Activating steam settings."<<std::endl;
       active_ = true;
-      ctrl_.setSetpoint(set_point_steam_);
+      ctrl_.setSetpoint(setpoints_.steam);
       ctrl_.setGains(K_steam_);
       update();
     }

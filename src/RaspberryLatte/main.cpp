@@ -2,10 +2,12 @@
 #include "../../include/RaspberryLatte/MAX31855.hpp"
 #include "../../include/RaspberryLatte/PID.hpp"
 #include "../../include/RaspberryLatte/Boiler.hpp"
+#include "../../include/RaspberryLatte/EspressoMachine.hpp"
 #include <iostream>
 
 
 int main(void){
+  /*
   RaspLatte::PinIndex gpio_num = 0;
   bool pull_down = false;
   bool invert = false;
@@ -27,7 +29,10 @@ int main(void){
   while(1){
     boiler1.update();
   }
-    
+  */
+
+  RaspLatte::EspressoMachine gaggia_classic(95, 140);
+  while(true){}
   return 1;
 }
   

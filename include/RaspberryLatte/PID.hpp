@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <curses.h>
 
 namespace RaspLatte{
   /**
@@ -23,12 +24,14 @@ namespace RaspLatte{
    *
    * In addition to the gains and their related fields, there is a field for the setpoint (default 0) and input range
    */
+  
   class PID{
   private:
     class DIntegral{
       /** A discrete integral class to handle the error sum in a PID controller*/
     public:
       DIntegral(){
+	// Starts with a data point at (t0,0)
 	prev_time_ = std::chrono::steady_clock::now();
 	prev_val_ = 0;
       }
@@ -37,7 +40,7 @@ namespace RaspLatte{
       
       /** Add a point to the integral. Assume a linear change from the previous v to current*/
       void addPoint(TimePoint t, double v){
-	Duration delta_t = t - prev_time_;
+	Duration delta_t = prev_time_ - t;
 	double avg_v = (v+prev_val_)/2.0;
 
 	area_ += (delta_t.count() * avg_v);
@@ -58,6 +61,7 @@ namespace RaspLatte{
       double area(){
 	return area_;
       }
+      
       void resetArea(){
 	area_ = 0;
       }
@@ -102,7 +106,7 @@ namespace RaspLatte{
         times_ = std::vector<TimePoint>();
 	slope_ = 0;
       }
-      
+
       double slope(){ return slope_; }
     private:
       std::vector<TimePoint> times_;
@@ -158,31 +162,38 @@ namespace RaspLatte{
 
 
     // ========================= Constructors =========================
-    PID(Sensor<double> * sensor_ptr, PIDGains gains, double set_point = 0): sensor_(sensor_ptr), K_(gains), set_point_(set_point){
+    PID(Sensor<double> * sensor_ptr, PIDGains gains, double setpoint = 0): sensor_(sensor_ptr), K_(gains), setpoint_(setpoint){
       min_t_between_updates_ = Duration(0.001);
       
       last_update_time_ = std::chrono::steady_clock::now();
       
       // Init the slope and integral terms
-      double err = sensor_->read()-set_point_;
+      double err = sensor_->read()-setpoint_;
       slope_ = DDerivative(last_update_time_, err);
       int_sum_ = DIntegral(last_update_time_, err);
+      
+      input_clamper_.setMin(0);
+      input_clamper_.setMax(255);
     }
 
     // ============================ Set up ===========================
     void setIntegralSumLimits(double min, double max){
       int_sum_.applyClamp(min, max);
     }
+    
     void setInputLimits(double min, double max){
       input_clamper_.setMin(min);
       input_clamper_.setMax(max);
     }
+    
     void setSlopePeriodSec(double period){
       slope_.setPeriod(period);
     }
-    double setPoint(){ return set_point_; }
-    void setSetpoint(double set_point){
-      set_point_ = set_point;
+    
+    double setpoint(){ return setpoint_; }
+    
+    void setSetpoint(double setpoint){
+      setpoint_ = setpoint;
       int_sum_.resetArea();
       slope_.reset();
     }
@@ -208,7 +219,7 @@ namespace RaspLatte{
       if (current_time - last_update_time_ < min_t_between_updates_) return u_;
 
       last_update_time_ = current_time;
-      double err = sensor_->read()-set_point_;
+      double err = sensor_->read()-setpoint_;
       
 
       int_sum_.addPoint(current_time, err);
@@ -222,11 +233,41 @@ namespace RaspLatte{
     double u(){
       return u_;
     }
+
+    double iSum(){
+      return int_sum_.area();
+    }
+    double slope(){
+      return slope_.slope();
+    }
+    
+    void printStatusIn(WINDOW * win){
+      int h, w;
+      getmaxyx(win, h, w);
+      if(h< 16 || w< 20) throw "Window to samll for PID Panel";
+      wclear(win);
+      wborder(win, '|', '|', '=','=','|','|','|','|');
+      mvwprintw(win, 1, w/2-7, "PID Controller");
+      mvhline(2, 1, '-', w-2);
+      mvwprintw(win, 3, w/2-7, "Tracking Data");
+      mvwprintw(win, 4, 2, "> Setpoint = %0.2f", setpoint_);
+      mvwprintw(win, 5, 2, "> Current  = %0.2f", sensor_->read());
+      mvwprintw(win, 6, 2, "> Error    = %0.2f", setpoint_ - sensor_->read());
+      mvwprintw(win, 7, 2, "> Output   = %d", setpoint_ - u_);
+      mvhline(8, 1, '-', w-2);
+      mvwprintw(win, 9, w/2-7, "Tracking Data");
+      mvwprintw(win, 10, 2, "> Kp    = %0.2f", K_.p);
+      mvwprintw(win, 11, 2, "> Ki    = %0.2f", K_.i);
+      mvwprintw(win, 12, 2, "> Kd    = %0.2f", K_.d);
+      mvwprintw(win, 13, 2, "> Area  = %0.2f", int_sum_.area());
+      mvwprintw(win, 14, 2, "> Slope = %0.2f", slope_.slope());
+      wrefresh(win);
+    }
     
   private:  
     Sensor<double> * sensor_;
     PIDGains K_;
-    double set_point_;
+    double setpoint_;
 
     Duration min_t_between_updates_;
     TimePoint last_update_time_;
@@ -239,3 +280,25 @@ namespace RaspLatte{
   };
 }
 #endif
+
+
+/*         1         2 
+ 012345678901234567890123456789
+ |============================|0
+ |       PID Controller       |1
+ |----------------------------|2
+ |       Tracking Data        |3
+ | > Setpoint = 140.00        |4
+ | > Current  = 134.75        |5
+ | > Error    =   5.25        |6
+ | > Output   = 234           |
+ |----------------------------|7
+ |       Internal Data        |8
+ | > Kp    =   15.00          |9
+ | > Ki    =    0.01          |0 1
+ | > Kd    =  100000          |1
+ | > Sum   = -000.00          |2
+ | > Slope =    5.43          |3
+ |============================|4
+
+ */

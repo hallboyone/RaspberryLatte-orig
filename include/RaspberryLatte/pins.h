@@ -11,5 +11,5 @@
 
 #define CS_THERMO 0      // GPIO 24
 
-#define PWM_BOILER 8     // GPIO 14
+#define PWM_BOILER 14     // GPIO 14
 #endif

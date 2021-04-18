@@ -1,13 +1,18 @@
 #ifndef BOILER
 #define BOILER
 
+#include <iostream>
+#include <pigpio.h>
+#include <sstream>
+
 #include "PID.hpp"
 #include "Clamp.hpp"
 #include "types.h"
-#include <iostream>
-#include <pigpio.h>
+
 
 namespace RaspLatte{
+  class BoilerPanel;
+  
   class Boiler{
   private:
     Sensor<double> * temp_sensor_;
@@ -23,7 +28,8 @@ namespace RaspLatte{
 
     bool active_;
     unsigned int current_pwm_setting_ = 128;
-    
+
+    friend BoilerPanel;
   public:
     Boiler(Sensor<double> * temp_sensor, PinIndex pwm_pin, TempPair setpoints):      
       temp_sensor_(temp_sensor), pwm_pin_(pwm_pin),
@@ -40,10 +46,10 @@ namespace RaspLatte{
       }
 
     bool brewActive(){
-      return ctrl_.setPoint()==setpoints_.brew;
+      return ctrl_.setpoint()==setpoints_.brew;
     }
     bool steamActive(){
-      return ctrl_.setPoint()==setpoints_.steam;
+      return ctrl_.setpoint()==setpoints_.steam;
     }
     
     void setBrewSetpoint(double setpoint){
@@ -71,32 +77,45 @@ namespace RaspLatte{
       }
       unsigned int pwm_output = ctrl_.update();
       if(pwm_output != current_pwm_setting_){ // Only update PWM setting if value changed.
-	std::cout<<"Boiler temp = "<<temp_sensor_->read()<<std::endl;
-	std::cout<<pwm_output<<" to boiler over pin #"<<(int)pwm_pin_<<std::endl;
 	gpioPWM(pwm_pin_, pwm_output);
 	current_pwm_setting_ = pwm_output;
       }
     }
     
     void activateBrew(){
-      std::cout<<"Activating brew settings."<<std::endl;
       active_ = true;
       ctrl_.setSetpoint(setpoints_.brew);
       ctrl_.setGains(K_brew_);
       update();
     }
+    
     void activateSteam(){
-      std::cout<<"Activating steam settings."<<std::endl;
       active_ = true;
       ctrl_.setSetpoint(setpoints_.steam);
       ctrl_.setGains(K_steam_);
       update();
     }
     void deactivate(){
-      std::cout<<"Turning off boiler\n";
       active_ = false;
       update();
     }
+
+    int printStatus(){
+      std::ostringstream output;
+      output<<", Boiler Active: "<<active_;
+      if(active_){
+	output<<", Current input: "<<(double)current_pwm_setting_/2.55;
+	output<<", Intergral Sum: "<<ctrl_.iSum()<<", Slope: "<<ctrl_.slope();
+      }
+      std::cout<<output.str();
+      return output.str().length();
+    }
+
+    
+    void printStatusIn(WINDOW * win){
+      ctrl_.printStatusIn(win);
+    }
+    
   };
 }
 #endif

@@ -68,7 +68,7 @@ namespace RaspLatte{
 	update();
       }
     }
-    
+
     void update(){
       if (!active_){
 	gpioPWM(pwm_pin_, 0);

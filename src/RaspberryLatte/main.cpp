@@ -43,6 +43,7 @@ int main(void){
   */
 
   RaspLatte::EspressoMachine gaggia_classic(95, 140);
+  gaggia_classic.run();
   /*
   initscr();
   cbreak();
@@ -50,15 +51,16 @@ int main(void){
   keypad(stdscr, TRUE);
   
   WINDOW * win_pid = newwin(20,30,0,0);
-  wtimeout(stdscr, 1000);
-  while(wgetch(stdscr) != 'q'){
-    gaggia_classic.printStatusIn(win_pid);
+  
+  timeout(1000);
+  while(getch() != 'q'){
+    gaggia_classic.update();
     //std::cout<<"Thermo_temp = "<<temp_sensor_ptr->read()<<std::endl;;
     //std::cout<<"Thermo_temp = "<<boiler_temp_sensor.read()<<std::endl;;
     
     //gpioSleep(PI_TIME_RELATIVE, 1, 0);
   }
-  endwin();
+  //endwin();
   */
   return 0;
 }

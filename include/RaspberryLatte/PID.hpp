@@ -51,7 +51,7 @@ namespace RaspLatte{
 	prev_time_ = t;
       }
 
-      void applyClamp(double min, double max){
+      void setClamp(double min, double max){
 	clamping_ = true;
 	clamp_.setMin(min);
 	clamp_.setMax(max);
@@ -184,7 +184,7 @@ namespace RaspLatte{
 
     // ============================ Set up ===========================
     void setIntegralSumLimits(double min, double max){
-      int_sum_.applyClamp(min, max);
+      int_sum_.setClamp(min, max);
     }
     
     void setInputLimits(double min, double max){

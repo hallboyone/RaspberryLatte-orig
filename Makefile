@@ -11,9 +11,9 @@ $(info $(SRC))
 $(info $(OBJ))
 
 CXXPPFLAGS := -Iinclude/RaspberryLatte -MMD -MP
-CXXFLAGS   := -Wall
+CXXFLAGS   := -Wall -Wno-psabi
 LDFLAGS  := -Llib
-LDLIBS   := -lpigpio -lrt
+LDLIBS   := -lpigpio -lrt -lncurses
 
 .PHONY: all clean
 

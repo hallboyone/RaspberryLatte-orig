@@ -15,5 +15,7 @@ namespace RaspLatte{
     double brew;
     double steam;
   } TempPair;
+
+  enum MachineMode {OFF, BREW, STEAM};
 }
 #endif

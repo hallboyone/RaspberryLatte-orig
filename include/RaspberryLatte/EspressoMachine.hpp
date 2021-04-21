@@ -18,7 +18,6 @@ namespace RaspLatte{
   
   class EspressoMachine{
   private:
-    enum MachineMode {BREW, STEAM, OFF};
     
     TempPair temps_;
     
@@ -38,20 +37,6 @@ namespace RaspLatte{
 
     MachineMode current_mode_;
 
-    /*
-    const char * header_str_ =
-      "################################################################################"
-      "#       )   (           ___    _    ___  ___  ___  ___  ___  ___ __   __       #"
-      "#      (    )  )       | _ \\  /_\\  / __|| _ \\| _ )| __|| _ \\| _ \\\\ \\ / /       #"
-      "#       )  (  (        |   / / _ \\ \\__ \\|  _/| _ \\| _| |   /|   / \\ V /        #"
-      "#     ________)_       |_|_\\/_/ \\_\\|___/|_|  |___/|___||_|_\\|_|_\\  |_|         #"
-      "#   .-'---------|               _       _  _____  _____  ___                   #"
-      "#  ( c|/\\/\\/\\/\\/|              | |     /_\\|_   _||_   _|| __|                  #"
-      "#   '-./\\/\\/\\/\\/|              | |__  / _ \\ | |    | |  | _|                   #"
-      "#     '_________'              |____|/_/ \\_\\|_|    |_|  |___|                  #"
-      "#      '-------'                                                               #"
-      "#==============================================================================#";
-    */
     int header_str_idx_ = 0;
     
     double setpoint(){
@@ -61,6 +46,7 @@ namespace RaspLatte{
 	return temps_.brew;
       }
     }
+    
     bool atSetpoint(){
       return ((boiler_temp_sensor_.read() < 1.05*setpoint()) & (boiler_temp_sensor_.read() > .95*setpoint()));
     }
@@ -68,11 +54,9 @@ namespace RaspLatte{
     void updateSetpoint(double increment){
       if (current_mode_==BREW) {
 	temps_.brew += increment;
-	boiler_.setBrewSetpoint(temps_.brew);
       }
       else if (current_mode_==STEAM) {
 	temps_.steam += increment;
-	boiler_.setSteamSetpoint(temps_.steam);
       }
     }
     
@@ -89,29 +73,16 @@ namespace RaspLatte{
     }
     
     void updateLights(){
-      gpioWrite(LIGHT_PIN_PWR, pwr_switch_.read());
+      gpioWrite(LIGHT_PIN_PWR, current_mode_ != OFF);
       gpioWrite(LIGHT_PIN_PMP, ((current_mode_ == BREW) & atSetpoint()));
       gpioWrite(LIGHT_PIN_STM, ((current_mode_ == STEAM) & atSetpoint()));
       return;
     }
 
-    //          1         2         3         4         5         6         7       
-    /*01234567890123456789012345678901234567890123456789012345678901234567890123456789
-     *#_____________________________General Information______________________________#
-     *#                                                                              #
-     *#       Power - On                 Mode - Steam              Pump - Off        #
-     *#                                                                              #
-     *#        80°C                    Setpoint - 95°C                   110°C       #
-     *#         |-----------------------------|-----------------------------|        #
-     *#              /\ 83.25°C                                                      #
-     *#                                                                              #
-     *#------------------------------------------------------------------------------#
-    */
-
-    void updateGeneralInfo(){
+    void updateGeneralInfoWin(){
       // Clear, border and title
       wclear(general_win_);
-      wborder(general_win_, '#', '#', '-','-','#','#','#','#');
+      wborder(general_win_, '#', '#', '-','=','#','#','#','#');
       mvwaddstr(general_win_, 0, 29, " General Information ");
 
       // Status line
@@ -174,10 +145,9 @@ namespace RaspLatte{
     
   public:
     EspressoMachine(double brew_temp, double steam_temp): temps_{.brew=brew_temp, .steam=steam_temp}, boiler_temp_sensor_(CS_THERMO),
-							  boiler_(&boiler_temp_sensor_, PWM_BOILER, temps_), pwr_switch_(SWITCH_PIN_PWR, false, true),
+							  boiler_(&boiler_temp_sensor_, &temps_, &current_mode_, PWM_BOILER), pwr_switch_(SWITCH_PIN_PWR, false, true),
 							  pump_switch_(SWITCH_PIN_PMP, true), steam_switch_(SWITCH_PIN_STM, true){
-      updateMode();
-      updateLights();
+      current_mode_ = OFF; // Keep machine off until run() is called
     }
 
     void run(){
@@ -196,7 +166,10 @@ namespace RaspLatte{
       
       //Init the screens and refresh
       mvwaddstr(header_win_, 0, 0, HEADER_STR[header_str_idx_]);
-      updateGeneralInfo();
+      updateGeneralInfoWin();
+      if (current_mode_ != OFF){
+	boiler_. updatePIDWin(pid_win_);
+      }
       wrefresh(header_win_);
       wrefresh(general_win_);
 
@@ -215,39 +188,14 @@ namespace RaspLatte{
 	    wrefresh(header_win_);
 	  }
 	}
+	updateMode();
 	updateLights();
-	updateGeneralInfo();
-	//refresh();
+	boiler_.update();
+	updateGeneralInfoWin();
+	if (current_mode_ != OFF){
+	  boiler_. updatePIDWin(pid_win_);
+	}
       }
-    }
-    
-    void update(){
-      updateGeneralInfo();
-      refresh();
-    }
-    
-    void printStatus(){
-      /*
-       *  $Power: ON , Pump: OFF, Targer Temp: 140°C, Current Temp: 135°C 
-       */
-      std::ostringstream output;  
-      output<<"Power: ";
-      if (pwr_switch_.read()) output<<"ON ";
-      else output<<"OFF";
-      output<<", Pump: ";
-      if (pump_switch_.read()) output<<"ON ";
-      else output<<"OFF";
-      output<<", Target Temp: ";
-      if(steam_switch_.read()) output<<temps_.steam<<"°C";
-      else output<<temps_.brew<<"°C";
-      if(boiler_temp_sensor_.read() == MAX31855_TEMP_UNAVALIBLE){
-	boiler_temp_sensor_.printError();
-	std::cout<<"\n";
-      }
-      else output<<", Current Temp: "<<boiler_temp_sensor_.read()<<"°C\n";
-      output_len_ = output.str().length();
-      std::cout<<output.str();
-      output_len_ += boiler_.printStatus();
     }
 
     ~EspressoMachine(){

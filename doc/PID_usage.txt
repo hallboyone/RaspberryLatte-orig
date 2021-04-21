@@ -1,0 +1,16 @@
+double setpoint = 95;
+
+// Create a new controller that is not running
+PID ctrl(gains, &setpoint, sensor);
+ctrl.setInputLimits(min, max);
+ctrl.setIntegralSumLimits(min, max);
+
+double input = ctrl.step();
+input = ctrl.step();
+setpoint = 105;
+input = ctrl.step();
+
+//Off for a while
+
+ctrl.reset();
+input = ctrl.step();

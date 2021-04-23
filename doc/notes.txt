@@ -1,0 +1,13 @@
+To communicate between the Espressomachine (EM, essential) and the user interface (UI, optional), the following could take place - 
+(1) [EM] Create two named pipes, EMO-UII and EMI-UIO, to handle communication
+    (a) EMO-UII is created as a write only
+    (b) EMI-UIO is created as a read only
+(2) [UI] Make sure the two pipes have been created. Error out if they have not (EM must be running before UI is)
+(3) [UI] Ask for update over EMI-UIO
+(4) [EM] Watch for update request over EMI-UIO. When recieved, write update to EMI-UIO
+(5) [UI] Watch for data in EMI-UIO. When it's recieved, write to output
+(6) [UI] Ask for update over EMI-UIO and share any user input
+(7) [EM] Watch for update request over EMI-UIO. If found, implement any user input and write update
+(8) [EM] When closing, destroy both pipes
+
+This would repeat the last few steps for all time. By using the ask-recieve mindset, the pipes are kept clear of a large buildup of data.

@@ -1,7 +1,7 @@
 #ifndef PINS
 #define PINS
                          // Label
-#define SWITCH_PIN_PWR 2 // GPIO 2
+#define SWITCH_PIN_PWR 16 // GPIO 16
 #define SWITCH_PIN_PMP 3 // GPIO 3
 #define SWITCH_PIN_STM 4 // GPIO 4
 

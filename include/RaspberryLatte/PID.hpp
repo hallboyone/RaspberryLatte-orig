@@ -254,19 +254,30 @@ namespace RaspLatte{
       return slope_.slope();
     }
 
-    void updateStatusWin(WINDOW * win){
-      // Clear, border and title
-      wclear(win);
-      wborder(win, '#', '#', '-','=','#','#','#','#');
-      mvwaddstr(win, 0, 34, " PID Status ");
+    void updateStatusWin(WINDOW * win, bool init = true){
+      if (init){
+	// Clear, border and title
+	wclear(win);
+	wborder(win, '#', '#', '-','=','#','#','#','#');
+	mvwaddstr(win, 0, 34, " PID Status ");
 
-      // PWM output line
-      mvwprintw(win, 1, 32, "PWM Output - %0.0f", u_);
-      mvwprintw(win, 3, 7, "Setpoint - %0.2f", *setpoint_);
-      mvwprintw(win, 3, 32, "Current - %0.2f", sensor_->read());
-      mvwprintw(win, 3, 58, "Error - %0.2f", sensor_->read() - *setpoint_);
-      mvwprintw(win, 4, 7, "Error Sum - %0.2f", int_sum_.area());
-      mvwprintw(win, 4, 32, "Slope - %0.2f", slope_.slope());
+	// PWM output line
+	mvwprintw(win, 1, 32, "PWM Output - %0.0f  ", u_);
+	mvwprintw(win, 3, 7, "Setpoint - %0.2f    ", *setpoint_);
+	mvwprintw(win, 3, 32, "Current - %0.2f    ", sensor_->read());
+	mvwprintw(win, 3, 58, "Error - %0.2f    ", sensor_->read() - *setpoint_);
+	mvwprintw(win, 4, 7, "Error Sum - %0.2f    ", int_sum_.area());
+	mvwprintw(win, 4, 32, "Slope - %0.2f    ", slope_.slope());
+      }
+      else {
+	mvwprintw(win, 1, 45, "%0.0f   ", u_);
+	mvwprintw(win, 3, 18, "%0.2f    ", *setpoint_);
+	mvwprintw(win, 3, 42, "%0.2f    ", sensor_->read());
+	mvwprintw(win, 3, 66, "%0.2f    ", sensor_->read() - *setpoint_);
+	mvwprintw(win, 4, 19, "%0.2f    ", int_sum_.area());
+	mvwprintw(win, 4, 40, "%0.2f    ", slope_.slope());
+      }
+      
       wrefresh(win);
     }
   private:  

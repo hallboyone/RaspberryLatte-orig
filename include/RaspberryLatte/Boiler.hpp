@@ -89,8 +89,8 @@ namespace RaspLatte{
       }
     }
 
-    void updatePIDWin(WINDOW * pid_win){
-      ctrl_.updateStatusWin(pid_win);
+    void updatePIDWin(WINDOW * pid_win, bool init = true){
+      ctrl_.updateStatusWin(pid_win, init);
     }
   };
 }

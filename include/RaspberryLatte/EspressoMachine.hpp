@@ -177,9 +177,9 @@ namespace RaspLatte{
       //Init the screens and refresh
       mvwaddstr(header_win_, 0, 0, HEADER_STR[header_str_idx_]);
       updateGeneralInfoWin();
-      if (current_mode_ != OFF){
-	boiler_. updatePIDWin(pid_win_);
-      }
+      
+      boiler_. updatePIDWin(pid_win_);
+      
       wrefresh(header_win_);
       wrefresh(general_win_);
 
@@ -191,9 +191,9 @@ namespace RaspLatte{
 	updateLights();
 	boiler_.update();
 	updateGeneralInfoWin(false);
-	//if (current_mode_ != OFF){
-	//  boiler_. updatePIDWin(pid_win_);
-	//}
+	if (current_mode_ != OFF){
+	  boiler_. updatePIDWin(pid_win_, false);
+	}
       }
     }
 

@@ -79,25 +79,32 @@ namespace RaspLatte{
       return;
     }
 
-    void updateGeneralInfoWin(){
-      // Clear, border and title
-      wclear(general_win_);
-      wborder(general_win_, '#', '#', '-','=','#','#','#','#');
-      mvwaddstr(general_win_, 0, 29, " General Information ");
+    void updateGeneralInfoWin(bool init = true){
+      if (init){
+	// Clear, border and title
+	wclear(general_win_);
+	wborder(general_win_, '#', '#', '-','=','#','#','#','#');
+	mvwaddstr(general_win_, 0, 29, " General Information ");
 
-      // Status line
-      mvwaddstr(general_win_, 2, 8, "Power - ");
-      if(current_mode_ == OFF) waddstr(general_win_, "Off");
-      else waddstr(general_win_, "On");
-      mvwaddstr(general_win_, 2, 35, "Mode - ");
-      if(current_mode_ == STEAM) waddstr(general_win_, "Steam");
-      else waddstr(general_win_, "Brew");
-      mvwaddstr(general_win_, 2, 61, "Pump - ");
-      if(pump_switch_.read()) waddstr(general_win_, "On");
-      else waddstr(general_win_, "Off");
+	// Status line
+	mvwaddstr(general_win_, 2, 8, "Power - ");
+	mvwaddstr(general_win_, 2, 35, "Mode - ");
+	mvwaddstr(general_win_, 2, 61, "Pump - ");
+
+	mvwaddstr(general_win_, 5, 10, "|-----------------------------|-----------------------------|");
+      }
+      
+      if(current_mode_ == OFF) mvwaddstr(general_win_, 2, 16, "Off");
+      else mvwaddstr(general_win_, 2, 16, "On ");
+
+      if(current_mode_ == STEAM) mvwaddstr(general_win_, 2, 42, "Steam");
+      else mvwaddstr(general_win_, 2, 42, "Brew ");
+      
+      if(pump_switch_.read()) mvwaddstr(general_win_, 2, 68, "On ");
+      else mvwaddstr(general_win_, 2, 68, "Off");
 
       //Temp line
-      mvwaddstr(general_win_, 5, 10, "|-----------------------------|-----------------------------|");
+    
       if(current_mode_ == OFF){
 	mvwprintw(general_win_, 4, 33, "Setpoint - NA", setpoint());
       } else {
@@ -174,24 +181,13 @@ namespace RaspLatte{
       wrefresh(general_win_);
 
       wtimeout(general_win_, 250);
-      int itr = 0;
       int key_press;
       while((key_press = wgetch(general_win_)) != 'q'){
 	handleKeyPress(key_press);
-	if (current_mode_ != OFF){
-	  itr++;
-	  if (itr == 2){
-	    itr = 0;
-	    if(header_str_idx_ == 4) header_str_idx_ = 0;
-	    else header_str_idx_++;
-	    mvwaddstr(header_win_, 0, 0, HEADER_STR[header_str_idx_]);
-	    wrefresh(header_win_);
-	  }
-	}
 	updateMode();
 	updateLights();
 	boiler_.update();
-	updateGeneralInfoWin();
+	updateGeneralInfoWin(false);
 	if (current_mode_ != OFF){
 	  boiler_. updatePIDWin(pid_win_);
 	}

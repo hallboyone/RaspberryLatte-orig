@@ -38,6 +38,7 @@ namespace RaspLatte{
     MachineMode current_mode_;
 
     int header_str_idx_ = 0;
+    int last_setpoint_slider_loc_ = 1;
     
     double setpoint(){
       if (current_mode_ == STEAM){
@@ -109,9 +110,10 @@ namespace RaspLatte{
 	mvwprintw(general_win_, 4, 33, "Setpoint - NA", setpoint());
       } else {
 	int display_range = (((int)(0.15 * setpoint())/5)+1)*5;
-	mvwprintw(general_win_, 4, 9, "%0.0fC", setpoint() - display_range);
+	mvwprintw(general_win_, 4, 9, "%0.0fC ", setpoint() - display_range);
 	mvwprintw(general_win_, 4, 33, "Setpoint - %0.2fC", setpoint());
-	mvwprintw(general_win_, 4, 68, "%0.0fC", setpoint() + display_range);
+	mvwprintw(general_win_, 4, 68, "%0.0fC ", setpoint() + display_range);
+	mvwprintw(general_win_, 6, last_setpoint_slider_loc_, "         ");
 
 	// Current temp pointer
 	double current_temp = boiler_temp_sensor_.read();
@@ -126,6 +128,7 @@ namespace RaspLatte{
 	  offset = (offset > 60 ? 60 : offset);
 	  mvwaddch(general_win_, 6, 10+offset, ACS_UARROW);
 	  wprintw(general_win_, " %0.2fC", current_temp, offset);
+	  last_setpoint_slider_loc_ = 10 + offset;
 	}
       }
       wrefresh(general_win_);
@@ -188,9 +191,9 @@ namespace RaspLatte{
 	updateLights();
 	boiler_.update();
 	updateGeneralInfoWin(false);
-	if (current_mode_ != OFF){
-	  boiler_. updatePIDWin(pid_win_);
-	}
+	//if (current_mode_ != OFF){
+	//  boiler_. updatePIDWin(pid_win_);
+	//}
       }
     }
 

@@ -40,7 +40,7 @@ namespace RaspLatte{
       
       /** Add a point to the integral. Assume a linear change from the previous v to current*/
       void addPoint(TimePoint t, double v){
-	Duration delta_t = prev_time_ - t;
+	Duration delta_t = t - prev_time_;
 	double avg_v = (v+prev_val_)/2.0;
 
 	area_ += (delta_t.count() * avg_v);
@@ -216,8 +216,8 @@ namespace RaspLatte{
       
       // Init the slope and integral terms
       double err = sensor_->read()- *setpoint_;
-      slope_ = DDerivative(last_update_time_, err);
-      int_sum_ = DIntegral(last_update_time_, err);
+      slope_.addPoint(last_update_time_, err);
+      int_sum_.addPoint(last_update_time_, err);
     }
     
     double update(){
@@ -232,7 +232,7 @@ namespace RaspLatte{
 	//slope_.reset();
       }
       
-      double err = sensor_->read() - *setpoint_;
+      double err = *setpoint_ - sensor_->read();
 
       int_sum_.addPoint(current_time, err);
       slope_.addPoint(current_time, err);
@@ -265,7 +265,7 @@ namespace RaspLatte{
 	mvwprintw(win, 1, 32, "PWM Output - %0.0f  ", u_);
 	mvwprintw(win, 3, 7, "Setpoint - %0.2f    ", *setpoint_);
 	mvwprintw(win, 3, 32, "Current - %0.2f    ", sensor_->read());
-	mvwprintw(win, 3, 58, "Error - %0.2f    ", sensor_->read() - *setpoint_);
+	mvwprintw(win, 3, 58, "Error - %0.2f    ", *setpoint_ - sensor_->read());
 	mvwprintw(win, 4, 7, "Error Sum - %0.2f    ", int_sum_.area());
 	mvwprintw(win, 4, 32, "Slope - %0.2f    ", slope_.slope());
       }
@@ -273,7 +273,7 @@ namespace RaspLatte{
 	mvwprintw(win, 1, 45, "%0.0f   ", u_);
 	mvwprintw(win, 3, 18, "%0.2f    ", *setpoint_);
 	mvwprintw(win, 3, 42, "%0.2f    ", sensor_->read());
-	mvwprintw(win, 3, 66, "%0.2f    ", sensor_->read() - *setpoint_);
+	mvwprintw(win, 3, 66, "%0.2f    ", *setpoint_ - sensor_->read());
 	mvwprintw(win, 4, 19, "%0.2f    ", int_sum_.area());
 	mvwprintw(win, 4, 40, "%0.2f    ", slope_.slope());
       }

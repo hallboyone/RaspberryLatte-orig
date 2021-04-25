@@ -22,8 +22,8 @@ namespace RaspLatte{
     MachineMode * mode_;
     MachineMode previous_mode_;
     
-    const PID::PIDGains K_brew_ = {.p = 15, .i = 0.1, .d = 50};
-    const PID::PIDGains K_steam_ = {.p = 15, .i = 0.1, .d = 50};
+    const PID::PIDGains K_brew_ = {.p = 35, .i = 0.0, .d = 100};
+    const PID::PIDGains K_steam_ = {.p = 15, .i = 0.0, .d = 00};
     
     PID ctrl_;
 
@@ -62,6 +62,9 @@ namespace RaspLatte{
 
       // Set defaults
       ctrl_.setMinUpdateTimeSec(0.20); //Don't update the PID faster than 5Hz
+      ctrl_.setIntegralSumLimits(0, 500);
+      ctrl_.setInputLimits(0, 255);
+      
       gpioSetPWMfrequency(heater_pin, 20); //Set the Pwm to operate at 20Hz
       
       //Assume not active until first update called
@@ -91,6 +94,10 @@ namespace RaspLatte{
 
     void updatePIDWin(WINDOW * pid_win, bool init = true){
       ctrl_.updateStatusWin(pid_win, init);
+    }
+
+    ~Boiler(){
+      gpioPWM(heater_pin_, 0);
     }
   };
 }

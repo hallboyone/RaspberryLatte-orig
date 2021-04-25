@@ -9,7 +9,6 @@
 #include "strings.h"
 
 #include <iostream>
-#include <sstream>
 #include <curses.h>
 
 namespace RaspLatte{

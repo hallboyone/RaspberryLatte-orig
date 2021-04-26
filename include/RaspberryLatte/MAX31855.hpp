@@ -115,6 +115,8 @@ namespace RaspLatte{
 
       buf >>= 4; // Dump buttom 4 bits (error bits and reserved bit)
 
+      // 0000|X|XXXXXXXXXXXXX|X|X|X|XXXXXXXXXXX
+      
       // Read the lower 11 bits remaining in buf. This is the unsigned ship temp
       if (buf & 0x800) { //negative chip temp
 	// Convert to negative value by extending sign and casting to signed type.
@@ -127,7 +129,8 @@ namespace RaspLatte{
 	
       buf >>= 14; // Dump the next 14 bits (chip temp, reserved, and fault bit)
 
-      if (buf & 0x200) {
+      // 000000000000000000|X|XXXXXXXXXXXXX
+      if (buf & 0x2000) {
 	// Negative value, drop the lower 18 bits and explicitly extend sign bits.
 	thermo_temp_ = 0xFFFFC000 | buf;
       } else {

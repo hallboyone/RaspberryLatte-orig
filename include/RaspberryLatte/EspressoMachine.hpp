@@ -7,6 +7,7 @@
 #include "pins.h"
 #include "types.h"
 #include "strings.h"
+#include "CPUThermometer.hpp"
 
 #include <iostream>
 #include <curses.h>
@@ -38,6 +39,8 @@ namespace RaspLatte{
 
     int header_str_idx_ = 0;
     int last_setpoint_slider_loc_ = 1;
+
+    CPUThermometer cpu_thermo_;
     
     double setpoint(){
       if (current_mode_ == STEAM){
@@ -104,7 +107,6 @@ namespace RaspLatte{
       else mvwaddstr(general_win_, 2, 68, "Off");
 
       //Temp line
-    
       if(current_mode_ == OFF){
 	mvwprintw(general_win_, 4, 33, "Setpoint - NA", setpoint());
       } else {
@@ -130,6 +132,7 @@ namespace RaspLatte{
 	  last_setpoint_slider_loc_ = 10 + offset;
 	}
       }
+      mvwprintw(general_win_, 7, 20, "%0.2fC", cpu_thermo_.getTemp());
       wrefresh(general_win_);
     }
 

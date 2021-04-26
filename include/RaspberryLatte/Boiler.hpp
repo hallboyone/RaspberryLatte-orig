@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <pigpio.h>
-#include <sstream>
 
 #include "PID.hpp"
 #include "Clamp.hpp"
@@ -22,14 +21,14 @@ namespace RaspLatte{
     MachineMode * mode_;
     MachineMode previous_mode_;
     
-    const PID::PIDGains K_brew_ = {.p = 35, .i = 0.1, .d = 200};
-    const PID::PIDGains K_steam_ = {.p = 35, .i = 0.1, .d = 200};
+    const PID::PIDGains K_brew_ = {.p = 50, .i = 0, .d = 500};
+    const PID::PIDGains K_steam_ = {.p = 35, .i = 0, .d = 200};
     
     PID ctrl_;
 
     Clamp<double> setpoint_clamp_;
 
-    unsigned int current_pwm_setting_ = 128;
+    unsigned int current_pwm_setting_ = 0;
 
     void updateMode(){
       if (previous_mode_ == OFF) ctrl_.reset();
@@ -73,9 +72,9 @@ namespace RaspLatte{
       current_pwm_setting_ = 0;
     }
 
-    void update(){
+    void update(int feed_forward = 0){
       //If machine is off, disable pwm
-      if(*mode_ == OFF){ 
+      if(*mode_ == OFF){
 	gpioPWM(heater_pin_, 0);
 	current_pwm_setting_ = 0;
 	previous_mode_ = OFF;
@@ -85,7 +84,7 @@ namespace RaspLatte{
       //Update internal parameters based on current mode.
       updateMode();
       
-      unsigned int pwm_output = ctrl_.update();
+      unsigned int pwm_output = ctrl_.update(feed_forward);
       if(pwm_output != current_pwm_setting_){ // Only update PWM setting if value changed.
 	gpioPWM(heater_pin_, pwm_output);
 	current_pwm_setting_ = pwm_output;

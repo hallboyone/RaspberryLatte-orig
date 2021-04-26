@@ -98,7 +98,7 @@ namespace RaspLatte{
     
     // ======================== Operation ============================
     void reset();
-    double update();
+    double update(int feed_forward = 0);
 
     // ========================= Getters ==============================
     double setpoint();

@@ -185,16 +185,21 @@ namespace RaspLatte{
       wrefresh(header_win_);
       wrefresh(general_win_);
 
-      wtimeout(general_win_, 250);
+      wtimeout(general_win_, 500);
       int key_press;
       while((key_press = wgetch(general_win_)) != 'q'){
-	handleKeyPress(key_press);
 	updateMode();
 	updateLights();
-	boiler_.update();
 	updateGeneralInfoWin(false);
 	if (current_mode_ != OFF){
+	  handleKeyPress(key_press);
 	  boiler_. updatePIDWin(pid_win_, false);
+	  if (pump_switch_.read()){
+	    boiler_.update(128);
+	  }
+	  else {
+	    boiler_.update();
+	  }
 	}
       }
     }

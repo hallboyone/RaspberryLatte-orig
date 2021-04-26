@@ -148,7 +148,7 @@ namespace RaspLatte{
     int_sum_.addPoint(last_update_time_, err);
   }
     
-  double PID::update(){
+  double PID::update(int feed_forward){
     TimePoint current_time = std::chrono::steady_clock::now();
     if (current_time - last_update_time_ < min_t_between_updates_) return u_;
 
@@ -165,7 +165,7 @@ namespace RaspLatte{
     int_sum_.addPoint(current_time, err);
     slope_.addPoint(current_time, err);
 
-    u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope();
+    u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope() + feed_forward;
 
     return input_clamper_.clamp(u_);
   }

@@ -17,7 +17,7 @@ namespace RaspLatte{
 
     double setpoint_;
     MachineMode * mode_;
-    MachineMode previous_mode_;
+    MachineMode current_mode_;
     
     const ModePair<PID::PIDGains> K_ = {.brew = {.p = 50, .i = 0, .d = 500},
 					.steam = {.p = 35, .i = 0, .d = 200}};
@@ -28,7 +28,7 @@ namespace RaspLatte{
 
     unsigned int current_pwm_setting_ = 0;
 
-    void updateMode();
+    void switchMode();
   public:
     Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin);
     void update(int feed_forward = 0);

@@ -14,6 +14,7 @@ namespace RaspLatte{
     PinIndex heater_pin_;
     
     TempPair * setpoints_;
+
     double setpoint_;
     MachineMode * mode_;
     MachineMode previous_mode_;

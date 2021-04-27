@@ -1,6 +1,6 @@
 SRC_DIR := src/RaspberryLatte
 OBJ_DIR := obj/RaspberryLatte
-BIN_DIR := .
+BIN_DIR := bin
 
 EXE := $(BIN_DIR)/RaspberryLatte
 SRC := $(wildcard $(SRC_DIR)/*.cpp)

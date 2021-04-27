@@ -19,8 +19,8 @@ namespace RaspLatte{
     MachineMode * mode_;
     MachineMode previous_mode_;
     
-    const PID::PIDGains K_brew_ = {.p = 50, .i = 0, .d = 500};
-    const PID::PIDGains K_steam_ = {.p = 35, .i = 0, .d = 200};
+    const ModePair<PID::PIDGains> K_ = {.brew = {.p = 50, .i = 0, .d = 500},
+					.steam = {.p = 35, .i = 0, .d = 200}};
     
     PID ctrl_;
 

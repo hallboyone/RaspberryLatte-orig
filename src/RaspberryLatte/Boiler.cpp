@@ -10,13 +10,13 @@ namespace RaspLatte{
     case STEAM:
       setpoint_ = setpoints_->steam;
       if(previous_mode_ != *mode_){
-	ctrl_.setGains(K_steam_);
+	ctrl_.setGains(K_.steam);
       }
       break;
     case BREW:
       setpoint_ = setpoints_->brew;
       if(previous_mode_ != *mode_){
-	ctrl_.setGains(K_brew_);
+	ctrl_.setGains(K_.brew);
       }
       break;
     case OFF:
@@ -28,7 +28,7 @@ namespace RaspLatte{
   Boiler::Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin):      
     temp_sensor_(temp_sensor), heater_pin_(heater_pin),
     setpoints_(setpoints), setpoint_(setpoints_->brew), mode_(mode),
-    ctrl_(K_brew_, &setpoint_, temp_sensor_), setpoint_clamp_(0,160)
+    ctrl_(K_.brew, &setpoint_, temp_sensor_), setpoint_clamp_(0,160)
   {
     if (gpioInitialise() < 0) throw "Could not start GPIO!";
 

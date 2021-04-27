@@ -29,8 +29,6 @@ namespace RaspLatte{
     Switch pump_switch_;
     Switch steam_switch_;
 
-    int output_len_;
-
     WINDOW * header_win_;
     WINDOW * general_win_;
     WINDOW * pid_win_;

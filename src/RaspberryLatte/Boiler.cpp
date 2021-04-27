@@ -41,7 +41,7 @@ namespace RaspLatte{
     ctrl_.setSlopePeriodSec(1.1);
 
     gpioSetPWMfrequency(heater_pin, 20); //Set the Pwm to operate at 20Hz
-      
+    
     //Assume not active until first update called
     gpioPWM(heater_pin_, 0);
     current_mode_ = OFF;
@@ -51,9 +51,12 @@ namespace RaspLatte{
   void Boiler::update(int feed_forward){
     //Update internal parameters based on current mode if needed.
     if (current_mode_ != *mode_) switchMode();
-      
+    
     //If machine is on, get input and apply to heater
     if(*mode_ != OFF){
+      if(current_mode_ == BREW) setpoint_ = setpoints_->brew;
+      else setpoint_ = setpoints_->steam;
+      
       unsigned int pwm_output = ctrl_.update(feed_forward);
       if(pwm_output != current_pwm_setting_){ // Only update PWM setting if value changed.
 	gpioPWM(heater_pin_, pwm_output);

@@ -19,7 +19,7 @@ namespace RaspLatte{
     MachineMode * mode_;
     MachineMode current_mode_;
     
-    const ModePair<PID::PIDGains> K_ = {.brew = {.p = 50, .i = 0, .d = 500},
+    const ModePair<PID::PIDGains> K_ = {.brew = {.p = 100, .i = 0.25, .d = 250},
 					.steam = {.p = 35, .i = 0, .d = 200}};
     
     PID ctrl_;

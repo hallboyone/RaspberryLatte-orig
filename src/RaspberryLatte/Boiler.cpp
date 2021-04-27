@@ -38,7 +38,8 @@ namespace RaspLatte{
     ctrl_.setMinUpdateTimeSec(0.20); //Don't update the PID faster than 5Hz
     ctrl_.setIntegralSumLimits(0, 100);
     ctrl_.setInputLimits(0, 255);
-      
+    ctrl_.setSlopePeriodSec(1.1);
+
     gpioSetPWMfrequency(heater_pin, 20); //Set the Pwm to operate at 20Hz
       
     //Assume not active until first update called

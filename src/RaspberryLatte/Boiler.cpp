@@ -69,6 +69,8 @@ namespace RaspLatte{
     ctrl_.updateStatusWin(pid_win, init);
   }
 
+  double Boiler::currentTemp(){ return temp_sensor_->read(); }
+  
   Boiler::~Boiler(){
     gpioPWM(heater_pin_, 0);
   }

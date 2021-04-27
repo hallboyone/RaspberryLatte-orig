@@ -203,6 +203,9 @@ namespace RaspLatte{
     }
 
     ~EspressoMachine(){
+      gpioWrite(LIGHT_PIN_PWR, 0);
+      gpioWrite(LIGHT_PIN_PMP, 0);
+      gpioWrite(LIGHT_PIN_STM, 0);
       endwin();
     }
   };

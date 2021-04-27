@@ -32,9 +32,13 @@ namespace RaspLatte{
   public:
     Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin);
     void update(int feed_forward = 0);
-    void updatePIDWin(WINDOW * pid_win, bool init = true);
 
     double currentTemp();
+    double currentPWM(){ return ctrl_.u(); }
+    double setpoint(){ return ctrl_.setpoint(); }
+    double errorSlope() { return ctrl_.slope(); }
+    double errorSum() { return ctrl_.errorSum(); }
+    
     ~Boiler();
   };
 }

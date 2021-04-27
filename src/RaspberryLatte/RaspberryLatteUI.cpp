@@ -56,11 +56,33 @@ namespace RaspLatte{
     }
     mvwprintw(general_win_, 7, 20, "%0.2fC", cpu_thermo_.getTemp());
     wrefresh(general_win_);
-
   }
     
   void RaspberryLatteUI::updateBoilerWindow(bool init){
-    boiler_->updatePIDWin(boiler_win_, init);  
+    if (init){
+      // Clear, border and title
+      wclear(boiler_win_);
+      wborder(boiler_win_, '#', '#', '-','=','#','#','#','#');
+      mvwaddstr(boiler_win_, 0, 34, " PID Status ");
+
+      // PWM output line
+      mvwprintw(boiler_win_, 1, 32, "PWM Output - %0.0f  ", boiler_->currentPWM());
+      mvwprintw(boiler_win_, 3, 7, "Setpoint - %0.2f    ", boiler_->setpoint());
+      mvwprintw(boiler_win_, 3, 32, "Current - %0.2f    ", boiler_->currentTemp());
+      mvwprintw(boiler_win_, 3, 58, "Error - %0.2f    ", boiler_->setpoint() - boiler_->currentTemp());
+      mvwprintw(boiler_win_, 4, 7, "Error Sum - %0.2f    ", boiler_->errorSum());
+      mvwprintw(boiler_win_, 4, 32, "Slope - %0.2f    ", boiler_->errorSlope());
+    }
+    else {
+      mvwprintw(boiler_win_, 1, 45, "%0.0f   ", boiler_->currentPWM());
+      mvwprintw(boiler_win_, 3, 18, "%0.2f    ", boiler_->setpoint());
+      mvwprintw(boiler_win_, 3, 42, "%0.2f    ", boiler_->currentTemp());
+      mvwprintw(boiler_win_, 3, 66, "%0.2f    ", boiler_->setpoint() - boiler_->currentTemp());
+      mvwprintw(boiler_win_, 4, 19, "%0.2f    ", boiler_->errorSum());
+      mvwprintw(boiler_win_, 4, 40, "%0.2f    ", boiler_->errorSlope());
+    }
+      
+    wrefresh(boiler_win_);
   }
     
   RaspberryLatteUI::RaspberryLatteUI(EspressoMachine * machine, Boiler * boiler): machine_(machine), boiler_(boiler){
@@ -84,15 +106,13 @@ namespace RaspLatte{
     wrefresh(header_win_);
 
     updateGeneralWindow();
-    wrefresh(general_win_);
-      
-    boiler_->updatePIDWin(boiler_win_);
+    updateBoilerWindow();
   }
     
   int RaspberryLatteUI::refresh(){
     int key_press = wgetch(general_win_);
     updateGeneralWindow(false);
-    boiler_->updatePIDWin(boiler_win_, false);
+    updateBoilerWindow(false);
     return key_press;
   }
 }

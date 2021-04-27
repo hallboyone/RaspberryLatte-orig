@@ -65,10 +65,6 @@ namespace RaspLatte{
     }
   }
 
-  void Boiler::updatePIDWin(WINDOW * pid_win, bool init){
-    ctrl_.updateStatusWin(pid_win, init);
-  }
-
   double Boiler::currentTemp(){ return temp_sensor_->read(); }
   
   Boiler::~Boiler(){

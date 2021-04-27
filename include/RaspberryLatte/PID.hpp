@@ -105,9 +105,7 @@ namespace RaspLatte{
     double u();
     double errorSum();
     double slope();
-
-    // =========================== UI =================================
-    void updateStatusWin(WINDOW * win, bool init = true);
+    
   private:  
     Sensor<double> * sensor_;
     PIDGains K_;

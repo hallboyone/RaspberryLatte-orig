@@ -22,7 +22,7 @@ namespace RaspLatte{
     CPUThermometer cpu_thermo_;
     
     void updateGeneralWindow(bool init = true);
-    void updateBoilerWindow(bool init = false);
+    void updateBoilerWindow(bool init = true);
   public:
     RaspberryLatteUI(EspressoMachine * machine, Boiler * boiler);
 

@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main(void){
-  RaspLatte::EspressoMachine gaggia_classic(95, 140);
+  RaspLatte::EspressoMachine gaggia_classic(95, 150);
   gaggia_classic.run();
   return 0;
 }

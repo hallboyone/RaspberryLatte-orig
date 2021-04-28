@@ -1,6 +1,8 @@
 #include "../../include/RaspberryLatte/EspressoMachine.hpp"
 
 namespace RaspLatte{
+
+  
   bool EspressoMachine::atSetpoint(){
     return ((boiler_temp_sensor_.read() < 1.05*setpoint()) & (boiler_temp_sensor_.read() > .95*setpoint()));
   }
@@ -8,21 +10,23 @@ namespace RaspLatte{
   void EspressoMachine::updateSetpoint(double increment){
     if (current_mode_==BREW) {
       temps_.brew += increment;
+      boiler_.updateSetpoint(temps_.brew);
     }
     else if (current_mode_==STEAM) {
       temps_.steam += increment;
+      boiler_.updateSetpoint(temps_.steam);
     }
   }
-    
+
   void EspressoMachine::updateMode(){
-    if(pwr_switch_.read()){
-      if(steam_switch_.read()){
-	current_mode_ = STEAM;
-      } else {
-	current_mode_ = BREW;
-      }
-    } else {
-      current_mode_ = OFF;
+    current_mode_ = currentMode();
+    switch(current_mode_){
+    case STEAM:
+      boiler_.updateSetpoint(temps_.steam, &K_.steam);
+    case BREW:
+      boiler_.updateSetpoint(temps_.brew, &K_.brew);
+    case OFF:
+      boiler_.turnOff();
     }
   }
     
@@ -54,7 +58,7 @@ namespace RaspLatte{
    
   EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):
     temps_{.brew=brew_temp, .steam=steam_temp}, boiler_temp_sensor_(CS_THERMO),
-    boiler_(&boiler_temp_sensor_, &temps_, &current_mode_, PWM_BOILER),
+    boiler_(&boiler_temp_sensor_, temps_.brew, &(K_.brew), PWM_BOILER),
     ui_(this, &boiler_), pwr_switch_(SWITCH_PIN_PWR, false, true),
     pump_switch_(SWITCH_PIN_PMP, true), steam_switch_(SWITCH_PIN_STM, true)
   {
@@ -64,7 +68,7 @@ namespace RaspLatte{
   void EspressoMachine::run(){
     int key_press;
     while((key_press = ui_.refresh()) != 'q'){
-      updateMode();
+      if (currentMode() != current_mode_) updateMode();
       updateLights();
       if (current_mode_ != OFF){
 	handleKeyPress(key_press);
@@ -78,7 +82,19 @@ namespace RaspLatte{
     }
   }
 
-  MachineMode EspressoMachine::currentMode(){ return current_mode_; }
+  MachineMode EspressoMachine::currentMode(){
+    if(pwr_switch_.read()){
+      if(steam_switch_.read()){
+	return STEAM;
+      } else {
+	return BREW;
+      }
+    }
+    else {
+      return OFF;
+    }
+  }
+  
   bool EspressoMachine::pumpOn() { return pump_switch_.read(); }
   double EspressoMachine::setpoint(){
     if (current_mode_ == STEAM){

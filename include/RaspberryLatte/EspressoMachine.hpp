@@ -25,6 +25,9 @@ namespace RaspLatte{
 
     MachineMode current_mode_;
 
+    const ModePair<PID::PIDGains> K_ = {.brew = {.p = 100, .i = 0.25, .d = 250},
+					.steam = {.p = 100, .i = 0., .d = 250}};
+    
     /*
      * Update the current mode's setpoint by the increment. If mode is off, do nothing
      */

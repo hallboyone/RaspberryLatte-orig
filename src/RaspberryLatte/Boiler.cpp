@@ -4,6 +4,8 @@
 #include <pigpio.h>
 
 namespace RaspLatte{
+
+  /*
   void Boiler::switchMode(){
     // If we just switched on, reset the controller
     if (current_mode_ == OFF) ctrl_.reset();
@@ -47,16 +49,49 @@ namespace RaspLatte{
     current_mode_ = OFF;
     current_pwm_setting_ = 0;
   }
+*/
+  
+  Boiler::Boiler(Sensor<double> * temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
+		 double min_setpoint, double max_setpoint):
+    temp_sensor_(temp_sensor), setpoint_(setpoint), ctrl_(*pid_gains, &setpoint_, temp_sensor_), heater_pin_(heater_pin_idx),
+    active_(false), setpoint_clamp_(min_setpoint, max_setpoint){
+    if (gpioInitialise() < 0) throw "Could not start GPIO!";
 
-  void Boiler::update(int feed_forward){
-    //Update internal parameters based on current mode if needed.
-    if (current_mode_ != *mode_) switchMode();
+    // Set defaults
+    ctrl_.setMinUpdateTimeSec(0.20); //Don't update the PID faster than 5Hz
+    ctrl_.setIntegralSumLimits(0, 100);
+    ctrl_.setInputLimits(0, 255);
+    ctrl_.setSlopePeriodSec(1.1);
+
+    gpioSetPWMfrequency(heater_pin_, 20); //Set the Pwm to operate at 20Hz
     
+    //Assume not active until first update called
+    gpioPWM(heater_pin_, 0);
+    current_pwm_setting_ = 0;
+  }
+
+  void Boiler::turnOn(){
+    active_ = true;
+    ctrl_.reset();
+    update();
+  }
+
+  void Boiler::turnOff(){
+    active_ = false;
+    gpioPWM(heater_pin_, 0);
+    current_pwm_setting_ = 0;
+  }
+  
+  double Boiler::updateSetpoint(double setpoint, const PID::PIDGains * gains){
+    if (gains != NULL) ctrl_.setGains(*gains);
+    setpoint_clamp_.clamp(setpoint);
+    setpoint_ = setpoint;
+    return setpoint;
+  }
+  
+  void Boiler::update(int feed_forward){
     //If machine is on, get input and apply to heater
-    if(*mode_ != OFF){
-      if(current_mode_ == BREW) setpoint_ = setpoints_->brew;
-      else setpoint_ = setpoints_->steam;
-      
+    if(active_){
       unsigned int pwm_output = ctrl_.update(feed_forward);
       if(pwm_output != current_pwm_setting_){ // Only update PWM setting if value changed.
 	gpioPWM(heater_pin_, pwm_output);

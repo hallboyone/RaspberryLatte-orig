@@ -44,7 +44,7 @@ namespace RaspLatte{
 
     //void switchMode();
   public:
-    Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin);
+    //Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin);
     Boiler(Sensor<double> * temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
 	   double min_setpoint = 0, double max_setpoint = 160);
 

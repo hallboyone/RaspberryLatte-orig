@@ -22,8 +22,12 @@ namespace RaspLatte{
     switch(current_mode_){
     case STEAM:
       boiler_.updateSetpoint(temps_.steam, &K_.steam);
+      boiler_.turnOn();
+      break;
     case BREW:
       boiler_.updateSetpoint(temps_.brew, &K_.brew);
+      boiler_.turnOn();
+      break;
     case OFF:
       boiler_.turnOff();
     }

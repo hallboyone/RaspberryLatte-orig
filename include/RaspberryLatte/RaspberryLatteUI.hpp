@@ -26,6 +26,7 @@ namespace RaspLatte{
   public:
     RaspberryLatteUI(EspressoMachine * machine, Boiler * boiler);
 
+    void init();
     /**
      * Wait 0.25 sec for key press and then update windows and return key
      */

@@ -1,7 +1,6 @@
 #include "../../include/RaspberryLatte/EspressoMachine.hpp"
 
 namespace RaspLatte{
-
   
   bool EspressoMachine::atSetpoint(){
     return ((boiler_temp_sensor_.read() < 1.05*setpoint()) & (boiler_temp_sensor_.read() > .95*setpoint()));
@@ -66,6 +65,7 @@ namespace RaspLatte{
   }
 
   void EspressoMachine::run(){
+    ui_.init();
     int key_press;
     while((key_press = ui_.refresh()) != 'q'){
       if (currentMode() != current_mode_) updateMode();

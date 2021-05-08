@@ -10,7 +10,7 @@ $(info $(EXE))
 $(info $(SRC))
 $(info $(OBJ))
 
-CXXPPFLAGS := -Iinclude/RaspberryLatte -MMD -MP
+CXXPPFLAGS := -Iinclude/RaspberryLatte -MMD -MP -ggdb3
 CXXFLAGS   := -Wall -Wno-psabi
 LDFLAGS  := -Llib
 LDLIBS   := -lpigpio -lrt -lncurses

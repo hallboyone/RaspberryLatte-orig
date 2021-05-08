@@ -4,6 +4,7 @@
 #include "Sensor.hpp"
 #include "types.h"
 #include <pigpio.h>
+#include <string>
 
 namespace RaspLatte{
   class BinarySensor : public Sensor<bool>{
@@ -25,12 +26,21 @@ namespace RaspLatte{
       } else {
 	gpioSetPullUpDown(p_, PI_PUD_UP);
       }
+
+      int sensor_val = gpioRead(p_);
+      if (sensor_val==PI_BAD_GPIO){
+	std::string msg = "Bad GPIO pin for BinarySensor: Pin #";
+	msg += std::to_string(p_);
+	throw msg.c_str();
+      }
     }
 
     virtual bool read() {
       int sensor_val = gpioRead(p_);
       if (sensor_val==PI_BAD_GPIO){
-	throw "Bad GPIO pin!";
+	std::string msg = "Bad GPIO pin for BinarySensor: Pin #";
+	msg += std::to_string(p_);
+	throw msg.c_str();
       }
       if (invert_){
 	return (sensor_val==0);

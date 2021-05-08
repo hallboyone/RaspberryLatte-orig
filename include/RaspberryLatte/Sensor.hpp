@@ -6,6 +6,7 @@ namespace RaspLatte{
   class Sensor{
   public:
     virtual RETURN_TYPE read() = 0;
+    virtual ~Sensor(){};
   };
 }
 #endif

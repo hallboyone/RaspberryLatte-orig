@@ -85,7 +85,9 @@ namespace RaspLatte{
     wrefresh(boiler_win_);
   }
     
-  RaspberryLatteUI::RaspberryLatteUI(EspressoMachine * machine, Boiler * boiler): machine_(machine), boiler_(boiler){
+  RaspberryLatteUI::RaspberryLatteUI(EspressoMachine * machine, Boiler * boiler): machine_(machine), boiler_(boiler){}
+
+  void RaspberryLatteUI::init(){
     //Set up stuff for ncurses
     initscr();
     cbreak();

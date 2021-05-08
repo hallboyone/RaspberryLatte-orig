@@ -29,7 +29,7 @@ namespace RaspLatte{
     bool active_;
     unsigned int current_pwm_setting_ = 0;
     Clamp<double> setpoint_clamp_;
-    
+    int pwm_output_ = 0;
     /*
     TempPair * setpoints_;
     MachineMode * mode_;
@@ -55,7 +55,7 @@ namespace RaspLatte{
     void update(int feed_forward = 0);
 
     double currentTemp();
-    double currentPWM(){ return ctrl_.u(); }
+    double currentPWM(){ return current_pwm_setting_; }
     double setpoint(){ return ctrl_.setpoint(); }
     double errorSlope() { return ctrl_.slope(); }
     double errorSum() { return ctrl_.errorSum(); }

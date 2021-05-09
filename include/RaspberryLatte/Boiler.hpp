@@ -11,9 +11,9 @@ namespace RaspLatte{
   /**
    * The Boiler class represents a single boiler within an espresso machine. 
    * Every boiler has the following components
-   * (a) A temp sensor (Sensor<double> object)
-   * (b) A heating element
-   * (c) A controller
+   * (a) A temp sensor (Sensor<double> * )
+   * (b) A heating element (A PWM output)
+   * (c) A controller (PID)
    *
    * The Boiler class is tasked with tracking a setpoint set using a function 
    * call. It is also responsible for ensuring the setpoint is within the 
@@ -22,29 +22,15 @@ namespace RaspLatte{
   
   class Boiler{
   private:
-    Sensor<double> * temp_sensor_;
-    double setpoint_;
-    PID ctrl_;
-    PinIndex heater_pin_;
-    bool active_;
-    unsigned int current_pwm_setting_ = 0;
-    Clamp<double> setpoint_clamp_;
-    int pwm_output_ = 0;
-    /*
-    TempPair * setpoints_;
-    MachineMode * mode_;
-    MachineMode current_mode_;
-    
-    const ModePair<PID::PIDGains> K_ = {.brew = {.p = 100, .i = 0.25, .d = 250},
-					.steam = {.p = 100, .i = 0., .d = 250}};
-    */
+    Sensor<double> * temp_sensor_; /** A pointer to the sensor measuring the boiler's temp */
+    double setpoint_; /** The setpoint being tracked by the boiler when active */
+    PID ctrl_; /** A PID controller regulating the PWM output */
+    PinIndex heater_pin_; /** The GPIO index for the heater pin */
+    bool active_; /** A boolean indicating if the heater is on */
+    unsigned int current_pwm_setting_ = 0; /** A record of the last pwm setting to check for changes */
+    Clamp<double> setpoint_clamp_; /** A clamp object that clips the setpoint within reasionable bounds */
 
-    
-    
-
-    //void switchMode();
   public:
-    //Boiler(Sensor<double> * temp_sensor, TempPair * setpoints, MachineMode * mode, PinIndex heater_pin);
     Boiler(Sensor<double> * temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
 	   double min_setpoint = 0, double max_setpoint = 160);
 

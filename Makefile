@@ -13,7 +13,7 @@ $(info $(OBJ))
 CXXPPFLAGS := -Iinclude/RaspberryLatte -MMD -MP -ggdb3
 CXXFLAGS   := -Wall -Wno-psabi
 LDFLAGS  := -Llib
-LDLIBS   := -lpigpio -lrt -lncurses
+LDLIBS   := -lpigpio -lrt -lncurses -lpaho-mqtt3c\
 
 .PHONY: all clean
 

@@ -5,9 +5,7 @@
 #include "Clamp.hpp"
 #include "types.h"
 
-
 namespace RaspLatte{
-
   /**
    * The Boiler class represents a single boiler within an espresso machine. 
    * Every boiler has the following components

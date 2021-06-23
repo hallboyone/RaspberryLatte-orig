@@ -6,7 +6,6 @@
 #include "MAX31855.hpp"
 #include "pins.h"
 #include "types.h"
-#include "RaspberryLatteUI.hpp"
 
 namespace RaspLatte{
   typedef BinarySensor Switch;
@@ -17,7 +16,6 @@ namespace RaspLatte{
     
     MAX31855 boiler_temp_sensor_;
     Boiler boiler_;
-    RaspberryLatteUI ui_;
     
     Switch pwr_switch_;
     Switch pump_switch_;
@@ -64,7 +62,6 @@ namespace RaspLatte{
     bool pumpOn();
     double setpoint();
     bool atSetpoint();
-
     
     ~EspressoMachine();
   };

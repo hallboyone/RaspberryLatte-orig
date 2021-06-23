@@ -1,38 +1,41 @@
-#ifndef RASPBERRY_LATTE_MQQT_UI
-#define RASPBERRY_LATTE_MQQT_UI
+#ifndef RASPBERRY_LATTE_MQQT_CLIENT
+#define RASPBERRY_LATTE_MQQT_CLIENT
 
-#include "MQTTClient.h"
-
-#define TIMEOUT     10000L
+#include <mqtt/client.h>
+#include <iostream>
 
 namespace RaspLatte{
-  class RaspberryLatteMQQTUI{
+  class MQTTClient{
   private:
     const char * ADDRESS_ = "tcp://localhost:1883";
-    const char * CLIENTID_ = "Gaggia_Classic";
+    const char * CLIENT_ID_ = "Gaggia_Classic";
     const char * TOPIC_ = "RaspberryLatte/state";
-    const int QOS_ = 1;
 
-    MQTTClient_connectOptions conn_opts_ = MQTTClient_connectOptions_initializer;
-    MQTTClient_message pubmsg_ = MQTTClient_message_initializer;
-      
-    MQTTClient client_;
+    mqtt::client client_;
+    mqtt::connect_options con_ops_;
+    
   public:
-    RaspberryLatteMQQTUI(){
-      conn_opts_.keepAliveInterval = 20;
-      conn_opts_.cleansession = 1;
-      
-      //MQTTClient_deliveryToken token;
-      int rc;
-      
-      MQTTClient_create(&client_, ADDRESS_, CLIENTID_,
-			MQTTCLIENT_PERSISTENCE_NONE, NULL);
-      if ((rc = MQTTClient_connect(client_, &conn_opts_)) != MQTTCLIENT_SUCCESS)
-	{
-	  printf("Failed to connect, return code %d\n", rc);
-	  throw "Could not connect";
-	}
+
+    MQTTClient(): client_(ADDRESS_, CLIENT_ID_){
+      con_ops_.set_keep_alive_interval(20);
+      con_ops_.set_clean_session(true);
     }
+
+    void connect(){
+      try{
+	std::cout<<"Connection...";
+	client_.connect(con_ops_);
+	std::cout<<"\nDone. Sending...";
+	client_.publish(TOPIC_, "Hello World", 12);
+	std::cout<<"\nDone. Sending message 2...";
+	client_.publish(TOPIC_, "How are you?", 13);
+	std::cout<<"Done!\n";
+      }
+      catch (const mqtt::exception& exc) {
+	std::cerr << exc.what() << std::endl;
+      }
+    }
+    
   };
 }
 

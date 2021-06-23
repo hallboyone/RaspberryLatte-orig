@@ -10,17 +10,17 @@ $(info $(EXE))
 $(info $(SRC))
 $(info $(OBJ))
 
-CXXPPFLAGS := -Iinclude/RaspberryLatte -MMD -MP -ggdb3
-CXXFLAGS   := -Wall -Wno-psabi
+CXXPPFLAGS := -std=c++11 -Iinclude/RaspberryLatte -MMD -MP 
+CXXFLAGS   := -Wall -Wno-psabi -lpaho-mqtt3c
 LDFLAGS  := -Llib
-LDLIBS   := -lpigpio -lrt -lncurses -lpaho-mqtt3c\
+LDLIBS   := -lpigpio -lrt -lpaho-mqtt3c -lpaho-mqttpp3
 
 .PHONY: all clean
 
 all: $(EXE)
 
 $(EXE): $(OBJ) | $(BIN_DIR)
-	g++ $(LDFLAGS) $^ $(LDLIBS) -o $@
+	g++ -std=c++11 $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	g++ $(CXXPPFLAGS) $(CXXFLAGS) -c $< -o $@

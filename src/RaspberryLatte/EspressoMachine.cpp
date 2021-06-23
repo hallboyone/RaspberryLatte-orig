@@ -39,7 +39,8 @@ namespace RaspLatte{
     gpioWrite(LIGHT_PIN_STM, ((current_mode_ == STEAM) & atSetpoint()));
     return;
   }
-    
+
+  /*
   void EspressoMachine::handleKeyPress(int key){
     switch(key){
     case KEY_UP:
@@ -58,24 +59,22 @@ namespace RaspLatte{
       break;
     }
   }
-   
+  */
   EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):
     temps_{.brew=brew_temp, .steam=steam_temp}, boiler_temp_sensor_(CS_THERMO),
     boiler_(&boiler_temp_sensor_, temps_.brew, &(K_.brew), PWM_BOILER),
-    ui_(this, &boiler_), pwr_switch_(SWITCH_PIN_PWR, false, true),
+    pwr_switch_(SWITCH_PIN_PWR, false, true),
     pump_switch_(SWITCH_PIN_PMP, true), steam_switch_(SWITCH_PIN_STM, true)
   {
     current_mode_ = OFF; // Keep machine off until run() is called
   }
 
   void EspressoMachine::run(){
-    ui_.init();
     int key_press;
-    while((key_press = ui_.refresh()) != 'q'){
+    while(true){
       if (currentMode() != current_mode_) updateMode();
       updateLights();
       if (current_mode_ != OFF){
-	handleKeyPress(key_press);
 	if (pump_switch_.read()){
 	  boiler_.update(128);
 	}
@@ -112,6 +111,5 @@ namespace RaspLatte{
     gpioWrite(LIGHT_PIN_PWR, 0);
     gpioWrite(LIGHT_PIN_PMP, 0);
     gpioWrite(LIGHT_PIN_STM, 0);
-    endwin();
   }
 }

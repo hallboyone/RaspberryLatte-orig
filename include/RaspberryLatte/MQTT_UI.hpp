@@ -35,7 +35,6 @@ namespace RaspLatte{
 	std::cerr << exc.what() << std::endl;
       }
     }
-    
   };
 }
 

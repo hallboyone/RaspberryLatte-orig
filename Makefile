@@ -10,8 +10,8 @@ $(info $(EXE))
 $(info $(SRC))
 $(info $(OBJ))
 
-CXXPPFLAGS := -std=c++11 -Iinclude/RaspberryLatte -MMD -MP 
-CXXFLAGS   := -Wall -Wno-psabi -lpaho-mqtt3c
+CXXPPFLAGS := -std=c++11 -Iinclude/RaspberryLatte #-MMD -MP 
+CXXFLAGS   := -Wall -Wno-psabi
 LDFLAGS  := -Llib
 LDLIBS   := -lpigpio -lrt -lpaho-mqtt3c -lpaho-mqttpp3
 

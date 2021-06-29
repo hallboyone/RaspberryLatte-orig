@@ -96,9 +96,9 @@ namespace RaspLatte{
 	else {
 	  boiler_.update();
 	}		    
-	client_.publish(TOPIC_, "Hello World", 12);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       }
+      sendMachineStateMQTT();
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   }
 

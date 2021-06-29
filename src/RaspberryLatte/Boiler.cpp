@@ -45,7 +45,7 @@ namespace RaspLatte{
   void Boiler::update(int feed_forward){
     //If machine is on, get input and apply to heater
     if(active_){
-      unsigned int pwm_output = ctrl_.update(feed_forward);
+      unsigned int pwm_output = 0;//ctrl_.update(feed_forward);
       if(pwm_output != current_pwm_setting_){ // Only update PWM setting if value changed.
 	gpioPWM(heater_pin_, pwm_output);
 	current_pwm_setting_ = pwm_output;

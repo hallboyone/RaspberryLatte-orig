@@ -52,6 +52,13 @@ namespace RaspLatte{
     msg += ":" + std::string(buf, 0, n);
     client_.publish(TOPIC_, msg.c_str(), msg.length());
   }
+
+  void EspressoMachine::getMachineSettingsMQTT(){
+    mqtt::const_message_ptr msg;
+    if (client_.try_consume_message(&msg)){
+      std::cout<<msg->get_payload_str()<<std::endl;
+    }
+  }
   
   EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):
     temps_{.brew=brew_temp, .steam=steam_temp}, boiler_temp_sensor_(CS_THERMO),
@@ -98,6 +105,7 @@ namespace RaspLatte{
 	}		    
       }
       sendMachineStateMQTT();
+      getMachineSettingsMQTT();
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   }

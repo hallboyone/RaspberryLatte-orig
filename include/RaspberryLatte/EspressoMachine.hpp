@@ -53,7 +53,7 @@ namespace RaspLatte{
     void updateLights();
 
     void sendMachineStateMQTT();
-    
+    void getMachineSettingsMQTT();
   public:
     EspressoMachine(double brew_temp, double steam_temp);
 

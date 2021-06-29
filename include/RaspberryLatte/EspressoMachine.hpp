@@ -3,20 +3,19 @@
 
 #include <mqtt/client.h>
 
-//#include "Boiler.hpp"
-//#include "BinarySensor.hpp"
-//#include "MAX31855.hpp"
-//#include "pins.h"
+#include "Boiler.hpp"
+#include "BinarySensor.hpp"
+#include "MAX31855.hpp"
+#include "pins.h"
 #include "types.h"
 
 namespace RaspLatte{
-  //typedef BinarySensor Switch;
+  typedef BinarySensor Switch;
 
   class EspressoMachine{
   private:
     TempPair temps_;
 
-    /*
     MAX31855 boiler_temp_sensor_;
     Boiler boiler_;
     
@@ -28,7 +27,6 @@ namespace RaspLatte{
 
     const ModePair<PID::PIDGains> K_ = {.brew = {.p = 100, .i = 0.25, .d = 250},
 					.steam = {.p = 100, .i = 0., .d = 250}};
-    */
     
     const char * ADDRESS_ = "tcp://localhost:1883";
     const char * CLIENT_ID_ = "Gaggia_Classic";

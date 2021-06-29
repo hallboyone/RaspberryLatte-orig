@@ -3,8 +3,7 @@
 #include <chrono>
 #include <thread>
 
-namespace RaspLatte{
-  /*  
+namespace RaspLatte{  
   bool EspressoMachine::atSetpoint(){
     return ((boiler_temp_sensor_.read() < 1.05*setpoint()) & (boiler_temp_sensor_.read() > .95*setpoint()));
   }
@@ -75,14 +74,14 @@ namespace RaspLatte{
     con_ops_.set_keep_alive_interval(20);
     con_ops_.set_clean_session(true);
   }
-  */
-
+  
+  /*
   EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):
     temps_{.brew=brew_temp, .steam=steam_temp}, client_(ADDRESS_, CLIENT_ID_){
       con_ops_.set_keep_alive_interval(20);
       con_ops_.set_clean_session(true);
   }
-
+  */
   
   void EspressoMachine::MQTTConnect(){
     try{
@@ -90,12 +89,13 @@ namespace RaspLatte{
     } 
     catch (const mqtt::exception& exc) {
       std::cerr << exc.what() << std::endl;
+      throw exc;
     }
   }
   
   void EspressoMachine::run(){
     //while(true){
-    for(int i=0; i<60; i++){/*
+    for(int i=0; i<60; i++){
       if (currentMode() != current_mode_) updateMode();
       updateLights();
       if (current_mode_ != OFF){
@@ -104,14 +104,13 @@ namespace RaspLatte{
 	}
 	else {
 	  boiler_.update();
-	}
-			    */
-      client_.publish(TOPIC_, "Hello World", 12);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}		    
+	client_.publish(TOPIC_, "Hello World", 12);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      }
     }
   }
 
-  /*
   MachineMode EspressoMachine::currentMode(){
     if(pwr_switch_.read()){
       if(steam_switch_.read()){
@@ -133,13 +132,11 @@ namespace RaspLatte{
       return temps_.brew;
     }
   }
-  */
+  
   EspressoMachine::~EspressoMachine(){
-    //client_.disconnect();
-    /*
+    client_.disconnect();
     gpioWrite(LIGHT_PIN_PWR, 0);
     gpioWrite(LIGHT_PIN_PMP, 0);
     gpioWrite(LIGHT_PIN_STM, 0);
-    */
   }
 }

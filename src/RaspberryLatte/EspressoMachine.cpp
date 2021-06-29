@@ -84,6 +84,7 @@ namespace RaspLatte{
   void EspressoMachine::MQTTConnect(){
     try{
       client_.connect(con_ops_);
+      client_.subscribe(SUB_TOPIC_);
     } 
     catch (const mqtt::exception& exc) {
       std::cerr << exc.what() << std::endl;

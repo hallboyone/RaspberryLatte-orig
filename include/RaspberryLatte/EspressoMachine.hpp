@@ -32,7 +32,8 @@ namespace RaspLatte{
     const char * ADDRESS_ = "tcp://localhost:1883";
     const char * CLIENT_ID_ = "Gaggia_Classic";
     const char * TOPIC_ = "RaspberryLatte/state";
-
+    const char * SUB_TOPIC_ = "RaspberryLatte/settings";
+    
     mqtt::client client_;
     mqtt::connect_options con_ops_;
 

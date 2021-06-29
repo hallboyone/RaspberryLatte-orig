@@ -42,24 +42,15 @@ namespace RaspLatte{
     return;
   }
 
-  
-  void EspressoMachine::handleKeyPress(int key){
-    switch(key){
-    case KEY_UP:
-      updateSetpoint(1);
-      break;
-    case KEY_DOWN:
-      updateSetpoint(-1);
-      break;
-    case KEY_LEFT:
-      updateSetpoint(-0.25);
-      break;
-    case KEY_RIGHT:
-      updateSetpoint(0.25);
-      break;
-    default:
-      break;
-    }
+  void EspressoMachine::sendMachineStateMQTT(){
+    // [Machine Mode]:[Is Ready]:[Boiler Temp]:[CPU Temp]:[PID Status]
+    std::string msg = std::to_string(currentMode());
+    char buf[15];
+    int n = sprintf(buf, "%0.2f", boiler_temp_sensor_.read());
+    msg += ":0:" + std::string(buf, 0, n);
+    n = sprintf(buf, "%0.2f", cpu_thermo_.getTemp());
+    msg += ":" + std::string(buf, 0, n);
+    client_.publish(TOPIC_, msg.c_str(), msg.length());
   }
   
   EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):

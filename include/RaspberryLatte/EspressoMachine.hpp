@@ -8,6 +8,7 @@
 #include "MAX31855.hpp"
 #include "pins.h"
 #include "types.h"
+#include "CPUThermometer.hpp"
 
 namespace RaspLatte{
   typedef BinarySensor Switch;
@@ -34,7 +35,8 @@ namespace RaspLatte{
 
     mqtt::client client_;
     mqtt::connect_options con_ops_;
-    
+
+    const CPUThermometer cpu_thermo_ = CPUThermometer();
     /*
      * Update the current mode's setpoint by the increment. If mode is off, do nothing
      */
@@ -50,10 +52,7 @@ namespace RaspLatte{
      */
     void updateLights();
 
-    /*
-     * Update internal paarameters based on the value of key
-     */
-    void handleKeyPress(int key);
+    void sendMachineStateMQTT();
     
   public:
     EspressoMachine(double brew_temp, double steam_temp);

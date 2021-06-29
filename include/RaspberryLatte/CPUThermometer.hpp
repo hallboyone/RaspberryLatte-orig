@@ -4,7 +4,7 @@
 
 class CPUThermometer{
 public:
-  float getTemp(){
+  float getTemp() const{
     float millideg;
     FILE *thermal;
 

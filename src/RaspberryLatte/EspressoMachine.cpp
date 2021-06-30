@@ -8,20 +8,9 @@ namespace RaspLatte{
     return ((boiler_temp_sensor_.read() < 1.05*setpoint()) & (boiler_temp_sensor_.read() > .95*setpoint()));
   }
 
-  void EspressoMachine::updateSetpoint(double increment){
-    if (current_mode_==BREW) {
-      temps_.brew += increment;
-      boiler_.updateSetpoint(temps_.brew);
-    }
-    else if (current_mode_==STEAM) {
-      temps_.steam += increment;
-      boiler_.updateSetpoint(temps_.steam);
-    }
-  }
-
   void EspressoMachine::updateMode(){
-    current_mode_ = currentMode();
-    switch(current_mode_){
+    //current_mode_ = currentMode();
+    switch(currentMode()){
     case STEAM:
       boiler_.updateSetpoint(temps_.steam, &K_.steam);
       boiler_.turnOn();
@@ -34,7 +23,7 @@ namespace RaspLatte{
       boiler_.turnOff();
     }
   }
-    
+
   void EspressoMachine::updateLights(){
     gpioWrite(LIGHT_PIN_PWR, current_mode_ != OFF);
     gpioWrite(LIGHT_PIN_PMP, ((current_mode_ == BREW) & atSetpoint()));
@@ -43,14 +32,10 @@ namespace RaspLatte{
   }
 
   void EspressoMachine::sendMachineStateMQTT(){
-    // [Machine Mode]:[Is Ready]:[Boiler Temp]:[CPU Temp]:[PID Status]
-    std::string msg = std::to_string(currentMode());
-    char buf[15];
-    int n = sprintf(buf, "%0.2f", boiler_temp_sensor_.read());
-    msg += ":0:" + std::string(buf, 0, n);
-    n = sprintf(buf, "%0.2f", cpu_thermo_.getTemp());
-    msg += ":" + std::string(buf, 0, n);
-    client_.publish(TOPIC_, msg.c_str(), msg.length());
+    char buf[50];
+    int n = sprintf(buf, "%d : %d : %0.2f : %0.2f", currentMode(), atSetpoint(),
+		    boiler_temp_sensor_.read(), cpu_thermo_.getTemp());
+    client_.publish(TOPIC_, buf, n);
   }
 
   void EspressoMachine::getMachineSettingsMQTT(){
@@ -72,14 +57,6 @@ namespace RaspLatte{
     con_ops_.set_keep_alive_interval(20);
     con_ops_.set_clean_session(true);
   }
-  
-  /*
-  EspressoMachine::EspressoMachine(double brew_temp, double steam_temp):
-    temps_{.brew=brew_temp, .steam=steam_temp}, client_(ADDRESS_, CLIENT_ID_){
-      con_ops_.set_keep_alive_interval(20);
-      con_ops_.set_clean_session(true);
-  }
-  */
   
   void EspressoMachine::MQTTConnect(){
     try{

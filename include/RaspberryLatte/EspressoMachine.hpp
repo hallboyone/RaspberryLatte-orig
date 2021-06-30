@@ -15,6 +15,7 @@ namespace RaspLatte{
 
   class EspressoMachine{
   private:
+    /** Struct containing the current brew and steam temperature setpoints*/
     TempPair temps_;
 
     MAX31855 boiler_temp_sensor_;
@@ -38,10 +39,6 @@ namespace RaspLatte{
     mqtt::connect_options con_ops_;
 
     const CPUThermometer cpu_thermo_ = CPUThermometer();
-    /*
-     * Update the current mode's setpoint by the increment. If mode is off, do nothing
-     */
-    void updateSetpoint(double increment);
 
     /*
      * Use the current state of the power and steam switch to get the curreent mode of the system
@@ -53,7 +50,14 @@ namespace RaspLatte{
      */
     void updateLights();
 
+    /**
+     * Creates a char array with the current machine state and publishes it to MQTT broker.
+     */
     void sendMachineStateMQTT();
+
+    /**
+     * If avalible, this will read and update the settings from a MQTT broker under RaspberryLatte/settings
+     */
     void getMachineSettingsMQTT();
   public:
     EspressoMachine(double brew_temp, double steam_temp);

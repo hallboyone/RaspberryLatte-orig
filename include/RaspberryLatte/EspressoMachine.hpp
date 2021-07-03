@@ -15,9 +15,49 @@ namespace RaspLatte{
 
   class EspressoMachine{
   private:
+    class EspressoMachineSettings{
+    private:
+      TempPair temp_;
+      char * encoded_data_;
+
+      void encode(){
+	int tmp_temp = 100*temp_.brew;
+	encoded_data_[0] = tmp_temp      & 0xff;
+	encoded_data_[1] = (tmp_temp>>8) & 0xff;
+	tmp_temp = 100*temp_.steam;
+	encoded_data_[2] = tmp_temp      & 0xff;
+	encoded_data_[3] = (tmp_temp>>8) & 0xff;
+      }
+    public:
+      EspressoMachineSettings(double brew_temp, double steam_temp): temp_{.brew=brew_temp, .steam=steam_temp} {
+	encoded_data_ = new char [4];
+      }
+      
+      double brewTemp(){ return temp_.brew; }
+      double steamTemp(){ return temp_.steam; }
+      
+      const char * encodedData(){
+	encode();
+	return encoded_data_;
+      }
+
+      void decodeData(const char * data){
+	int tmp_temp = data[1];
+	tmp_temp = (tmp_temp<<8) | data[0];
+	temp_.brew = (double)tmp_temp/100.;
+	tmp_temp = data[3];
+	temp_.steam = (tmp_temp<<8) | data[2];
+      }
+
+      ~EspressoMachineSettings(){
+	delete(encoded_data_);
+      }
+    };
+      
     /** Struct containing the current brew and steam temperature setpoints*/
     TempPair temps_;
-
+    EspressoMachineSettings settings_;
+    
     MAX31855 boiler_temp_sensor_;
     Boiler boiler_;
     

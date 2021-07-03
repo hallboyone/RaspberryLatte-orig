@@ -20,5 +20,7 @@ namespace RaspLatte{
   typedef ModePair<double> TempPair;
   
   enum MachineMode {OFF, BREW, STEAM};
+
+  enum MachineSetting {BREW_TEMP=0, STEAM_TEMP};
 }
 #endif

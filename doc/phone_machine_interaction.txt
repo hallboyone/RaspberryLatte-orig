@@ -1,0 +1,15 @@
+Date: July 2, 2021
+Author: Richard Hall
+Goal: The purpose of these notes is to identify the interactions between the an
+application running on a phone and RaspberryLatte running on the pi. The
+communication is over MQTT.
+
+
+Minimal Case: The phone transmits settings updates to the pi. The pi transmits
+the current state to the phone. The settings that can be updated include the
+temperatures. The state includes the current temperature and machine state.
+When a connection is first made, the pi should transmit the current machine
+settings to the phone.
+
+To easily transmit the settings back and forth, a class that holds them all
+and encodes them into a char array would be useful.

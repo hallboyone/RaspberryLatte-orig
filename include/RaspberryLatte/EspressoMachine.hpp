@@ -46,7 +46,8 @@ namespace RaspLatte{
 	tmp_temp = (tmp_temp<<8) | data[0];
 	temp_.brew = (double)tmp_temp/100.;
 	tmp_temp = data[3];
-	temp_.steam = (tmp_temp<<8) | data[2];
+	tmp_temp = (tmp_temp<<8) | data[2];
+	temp_.steam = (double)tmp_temp/100.;
       }
 
       ~EspressoMachineSettings(){

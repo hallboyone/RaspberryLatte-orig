@@ -24,7 +24,7 @@ namespace RaspLatte{
     return area_;
   }
       
-  void PID::DIntegral::resetArea(){
+  void PID::DIntegral::reset(){
     area_ = 0;
   }
   
@@ -103,9 +103,8 @@ namespace RaspLatte{
     last_update_time_ = std::chrono::steady_clock::now();
 
     // Init the slope and integral terms
-    double err = sensor_->read()- *setpoint_;
-    slope_ = DDerivative(last_update_time_, err);
-    int_sum_ = DIntegral(last_update_time_, err);
+    slope_ = DDerivative(last_update_time_, sensor_->read());
+    int_sum_ = DIntegral(last_update_time_, sensor_->read()- *setpoint_);
       
     prev_setpoint_ = *setpoint;
   }
@@ -137,15 +136,14 @@ namespace RaspLatte{
   // ======================== Operation ============================
   void PID::reset(){
     // Reset slope and integral terms
-    int_sum_.resetArea();
+    int_sum_.reset();
     slope_.reset();
 
     last_update_time_ = std::chrono::steady_clock::now();
       
     // Init the slope and integral terms
-    double err = sensor_->read()- *setpoint_;
-    slope_.addPoint(last_update_time_, err);
-    int_sum_.addPoint(last_update_time_, err);
+    slope_.addPoint(last_update_time_, sensor_->read());
+    int_sum_.addPoint(last_update_time_, sensor_->read()- *setpoint_);
   }
     
   double PID::update(int feed_forward){
@@ -154,18 +152,10 @@ namespace RaspLatte{
 
     last_update_time_ = current_time;
 
-    // If setpoint changed, reset internal variables
-    if (*setpoint_ != prev_setpoint_){
-      prev_setpoint_ = *setpoint_;
-      //slope_.reset();
-    }
-      
-    double err = *setpoint_ - sensor_->read();
-
-    int_sum_.addPoint(current_time, err);
-    slope_.addPoint(current_time, err);
-
-    u_ = K_.p * err + K_.i * int_sum_.area()+ K_.d * slope_.slope() + feed_forward;
+    slope_.addPoint(last_update_time_, sensor_->read());
+    int_sum_.addPoint(last_update_time_, sensor_->read()- *setpoint_);
+    
+    u_ = K_.p * (sensor_->read()- *setpoint_) + K_.i * int_sum_.area()+ K_.d * slope_.slope() + feed_forward;
 
     return input_clamper_.clamp(u_);
   }

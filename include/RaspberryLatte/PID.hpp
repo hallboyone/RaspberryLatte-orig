@@ -41,7 +41,7 @@ namespace RaspLatte{
       void addPoint(TimePoint t, double v);
       void setClamp(double min, double max);
       double area();
-      void resetArea();
+      void reset();
       
     private:
       TimePoint prev_time_;

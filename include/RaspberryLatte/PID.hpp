@@ -87,7 +87,7 @@ namespace RaspLatte{
     } PIDGains;
 
     // ========================= Constructors =========================
-    PID(PIDGains gains, double * setpoint, Sensor<double> * sensor_ptr);
+    PID(PIDGains gains, double * setpoint, Sensor<double> * const sensor_ptr);
     
     // ============================ Setters  ===========================
     void setIntegralSumLimits(double min, double max);
@@ -107,7 +107,7 @@ namespace RaspLatte{
     double slope();
     
   private:  
-    Sensor<double> * sensor_;
+    Sensor<double> * const sensor_;
     PIDGains K_;
     double * setpoint_;
     double prev_setpoint_; // Used to check if value changed

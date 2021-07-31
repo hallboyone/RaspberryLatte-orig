@@ -93,7 +93,7 @@ namespace RaspLatte{
   }
 
   // ========================= Constructors =========================
-  PID::PID(PIDGains gains, double * setpoint, Sensor<double> * sensor_ptr): sensor_(sensor_ptr), K_(gains), setpoint_(setpoint){
+  PID::PID(PIDGains gains, double * setpoint, Sensor<double> * const sensor_ptr): sensor_(sensor_ptr), K_(gains), setpoint_(setpoint){
     // Default settings
     min_t_between_updates_ = Duration(0.001);
     slope_.setPeriod(2);

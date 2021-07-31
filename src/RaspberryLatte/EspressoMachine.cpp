@@ -59,7 +59,7 @@ namespace RaspLatte{
     }
   }
    
-  EspressoMachine::EspressoMachine(double brew_temp, double steam_temp, Sensor<double> * boiler_temp_sensor):
+  EspressoMachine::EspressoMachine(double brew_temp, double steam_temp, Sensor<double> * const boiler_temp_sensor):
     temps_{.brew=brew_temp, .steam=steam_temp},
     boiler_(boiler_temp_sensor, temps_.brew, &(K_.brew), PWM_BOILER),
     ui_(this, &boiler_), pwr_switch_(SWITCH_PIN_PWR, false, true),

@@ -48,7 +48,7 @@ namespace RaspLatte{
     void handleKeyPress(int key);
     
   public:
-    EspressoMachine(double brew_temp, double steam_temp, Sensor<double> * boiler_temp_sensor);
+    EspressoMachine(double brew_temp, double steam_temp, Sensor<double> * const boiler_temp_sensor);
 
     /*
      * Runs a loop where the UI is refreshed, any keys are handled, and the 

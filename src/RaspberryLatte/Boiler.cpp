@@ -4,7 +4,7 @@
 #include <pigpio.h>
 
 namespace RaspLatte{  
-  Boiler::Boiler(Sensor<double> * temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
+  Boiler::Boiler(Sensor<double> * const temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
 		 double min_setpoint, double max_setpoint):
     temp_sensor_(temp_sensor), setpoint_(setpoint), ctrl_(*pid_gains, &setpoint_, temp_sensor_), heater_pin_(heater_pin_idx),
     active_(false), setpoint_clamp_(min_setpoint, max_setpoint){

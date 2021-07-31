@@ -21,7 +21,7 @@ namespace RaspLatte{
   
   class Boiler{
   private:
-    Sensor<double> * temp_sensor_; /** The sensor measuring the boiler's temp */
+    Sensor<double> * const temp_sensor_; /** The sensor measuring the boiler's temp */
     double setpoint_; /** The setpoint being tracked by the boiler when active */
     PID ctrl_; /** A PID controller regulating the PWM output */
     PinIndex heater_pin_; /** The GPIO index for the heater pin */
@@ -30,7 +30,7 @@ namespace RaspLatte{
     Clamp<double> setpoint_clamp_; /** A clamp object that clips the setpoint within reasionable bounds */
 
   public:
-    Boiler(Sensor<double> * temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
+    Boiler(Sensor<double> * const temp_sensor, double setpoint, const PID::PIDGains * pid_gains, PinIndex heater_pin_idx,
 	   double min_setpoint = 0, double max_setpoint = 160);
 
     void turnOn();

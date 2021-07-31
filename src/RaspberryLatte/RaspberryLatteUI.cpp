@@ -39,7 +39,7 @@ namespace RaspLatte{
       mvwprintw(general_win_, 6, last_setpoint_slider_loc_, "         ");
 
       // Current temp pointer
-      double current_temp = boiler_->currentTemp();
+      double current_temp = boiler_->temp();
       if(current_temp == MAX31855_TEMP_UNAVALIBLE){
 	mvwaddch(general_win_, 6, 10, ACS_UARROW);
 	wprintw(general_win_, " NA C");
@@ -68,16 +68,16 @@ namespace RaspLatte{
       // PWM output line
       mvwprintw(boiler_win_, 1, 32, "PWM Output - %0.0f  ", boiler_->currentPWM());
       mvwprintw(boiler_win_, 3, 7, "Setpoint - %0.2f    ", boiler_->setpoint());
-      mvwprintw(boiler_win_, 3, 32, "Current - %0.2f    ", boiler_->currentTemp());
-      mvwprintw(boiler_win_, 3, 58, "Error - %0.2f    ", boiler_->setpoint() - boiler_->currentTemp());
+      mvwprintw(boiler_win_, 3, 32, "Current - %0.2f    ", boiler_->temp());
+      mvwprintw(boiler_win_, 3, 58, "Error - %0.2f    ", boiler_->setpoint() - boiler_->temp());
       mvwprintw(boiler_win_, 4, 7, "Error Sum - %0.2f    ", boiler_->errorSum());
       mvwprintw(boiler_win_, 4, 32, "Slope - %0.2f    ", boiler_->errorSlope());
     }
     else {
       mvwprintw(boiler_win_, 1, 45, "%0.0f   ", boiler_->currentPWM());
       mvwprintw(boiler_win_, 3, 18, "%0.2f    ", boiler_->setpoint());
-      mvwprintw(boiler_win_, 3, 42, "%0.2f    ", boiler_->currentTemp());
-      mvwprintw(boiler_win_, 3, 66, "%0.2f    ", boiler_->setpoint() - boiler_->currentTemp());
+      mvwprintw(boiler_win_, 3, 42, "%0.2f    ", boiler_->temp());
+      mvwprintw(boiler_win_, 3, 66, "%0.2f    ", boiler_->setpoint() - boiler_->temp());
       mvwprintw(boiler_win_, 4, 19, "%0.2f    ", boiler_->errorSum());
       mvwprintw(boiler_win_, 4, 40, "%0.2f    ", boiler_->errorSlope());
     }

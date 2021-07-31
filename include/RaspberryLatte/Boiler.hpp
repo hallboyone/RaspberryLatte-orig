@@ -4,6 +4,7 @@
 #include "PID.hpp"
 #include "Clamp.hpp"
 #include "types.h"
+#include "MAX31855.hpp"
 
 namespace RaspLatte{
   /**
@@ -20,7 +21,7 @@ namespace RaspLatte{
   
   class Boiler{
   private:
-    Sensor<double> * temp_sensor_; /** A pointer to the sensor measuring the boiler's temp */
+    Sensor<double> * temp_sensor_; /** The sensor measuring the boiler's temp */
     double setpoint_; /** The setpoint being tracked by the boiler when active */
     PID ctrl_; /** A PID controller regulating the PWM output */
     PinIndex heater_pin_; /** The GPIO index for the heater pin */
@@ -38,7 +39,7 @@ namespace RaspLatte{
     
     void update(int feed_forward = 0);
 
-    double currentTemp();
+    double temp();
     double currentPWM(){ return current_pwm_setting_; }
     double setpoint(){ return ctrl_.setpoint(); }
     double errorSlope() { return ctrl_.slope(); }

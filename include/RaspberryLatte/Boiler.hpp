@@ -4,7 +4,7 @@
 #include "PID.hpp"
 #include "Clamp.hpp"
 #include "types.h"
-#include "MAX31855.hpp"
+#include "PWMOutput.hpp"
 
 namespace RaspLatte{
   /**
@@ -24,9 +24,8 @@ namespace RaspLatte{
     Sensor<double> * const temp_sensor_; /** The sensor measuring the boiler's temp */
     double setpoint_; /** The setpoint being tracked by the boiler when active */
     PID ctrl_; /** A PID controller regulating the PWM output */
-    PinIndex heater_pin_; /** The GPIO index for the heater pin */
+    PWMOutput heater_;
     bool active_; /** A boolean indicating if the heater is on */
-    unsigned int current_pwm_setting_ = 0; /** A record of the last pwm setting to check for changes */
     Clamp<double> setpoint_clamp_; /** A clamp object that clips the setpoint within reasionable bounds */
 
   public:
@@ -40,12 +39,10 @@ namespace RaspLatte{
     void update(int feed_forward = 0);
 
     double temp();
-    double currentPWM(){ return current_pwm_setting_; }
+    double currentPWM(){ return heater_.currentDutyCycle(); }
     double setpoint(){ return ctrl_.setpoint(); }
     double errorSlope() { return ctrl_.slope(); }
     double errorSum() { return ctrl_.errorSum(); }
-    
-    ~Boiler();
   };
 }
 #endif

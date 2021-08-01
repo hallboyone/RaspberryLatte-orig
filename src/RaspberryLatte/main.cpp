@@ -6,7 +6,7 @@
 
 int main(void){
   RaspLatte::MAX31855 boiler_thermometer(CS_THERMO);
-  RaspLatte::EspressoMachine gaggia_classic(95, 150, &boiler_thermometer);
+  RaspLatte::EspressoMachine gaggia_classic(93.5, 157, &boiler_thermometer);
   gaggia_classic.run();
   return 0;
 }

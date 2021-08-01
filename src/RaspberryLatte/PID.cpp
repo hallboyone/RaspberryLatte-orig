@@ -104,7 +104,7 @@ namespace RaspLatte{
 
     // Init the slope and integral terms
     slope_ = DDerivative(last_update_time_, sensor_->read());
-    int_sum_ = DIntegral(last_update_time_, sensor_->read()- *setpoint_);
+    int_sum_ = DIntegral(last_update_time_, *setpoint_-sensor_->read());
       
     prev_setpoint_ = *setpoint;
   }
@@ -143,7 +143,7 @@ namespace RaspLatte{
       
     // Init the slope and integral terms
     slope_.addPoint(last_update_time_, sensor_->read());
-    int_sum_.addPoint(last_update_time_, sensor_->read()- *setpoint_);
+    int_sum_.addPoint(last_update_time_, *setpoint_-sensor_->read());
   }
     
   double PID::update(int feed_forward){
@@ -153,9 +153,9 @@ namespace RaspLatte{
     last_update_time_ = current_time;
 
     slope_.addPoint(last_update_time_, sensor_->read());
-    int_sum_.addPoint(last_update_time_, sensor_->read()- *setpoint_);
+    int_sum_.addPoint(last_update_time_, *setpoint_-sensor_->read());
     
-    u_ = K_.p * (sensor_->read()- *setpoint_) + K_.i * int_sum_.area()+ K_.d * slope_.slope() + feed_forward;
+    u_ = K_.p * (*setpoint_-sensor_->read()) + K_.i * int_sum_.area()+ K_.d * slope_.slope() + feed_forward;
 
     return input_clamper_.clamp(u_);
   }
